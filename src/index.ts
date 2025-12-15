@@ -1,4 +1,8 @@
 import { extendConfig, internalTask, task } from "hardhat/config";
+import "./tasks/init";
+import "./tasks/deploy";
+import "./tasks/generate-helpers";
+import "./tasks/test";
 
 import { existsSync, writeFileSync } from "fs";
 import {
@@ -14,6 +18,14 @@ import {
   HardhatFoundryError,
   installDependency,
 } from "./foundry";
+
+// Export framework classes for programmatic use
+export { ForgeFuzzingFramework } from "./framework/ForgeFuzzingFramework";
+export { DeploymentManager } from "./framework/DeploymentManager";
+export { HelperGenerator } from "./framework/HelperGenerator";
+
+// Export types
+export * from "./types/config";
 
 const TASK_INIT_FOUNDRY = "init-foundry";
 

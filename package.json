@@ -1,7 +1,7 @@
 {
   "name": "@diamondslab/diamonds-hardhat-foundry",
   "version": "1.0.0",
-  "description": "Hardhat plugin that adds Hardhat support to Foundry projects",
+  "description": "Hardhat plugin that integrates Foundry testing with Diamond proxy contracts, providing deployment helpers and fuzzing support",
   "repository": {
     "type": "git",
     "url": "https://github.com/diamondslab/diamonds-hardhat-foundry",
@@ -23,7 +23,10 @@
     "diamonds",
     "diamond",
     "solidity",
-    "erc-2535"
+    "erc-2535",
+    "fuzzing",
+    "testing",
+    "diamond-proxy"
   ],
   "scripts": {
     "lint": "pnpm prettier --check && pnpm eslint",
@@ -39,6 +42,7 @@
   "files": [
     "dist/src/",
     "src/",
+    "contracts/",
     "LICENSE",
     "README.md"
   ],
