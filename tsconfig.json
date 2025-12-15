@@ -35,10 +35,5 @@
     ".tmp-*",
     "test",
     "scripts"
-  ],
-  "references": [
-    {
-      "path": "../../node_modules/hardhat/src"
-    }
   ]
 }
