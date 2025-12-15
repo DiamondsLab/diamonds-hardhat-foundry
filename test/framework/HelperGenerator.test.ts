@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import { HelperGenerator } from "../../src/framework/HelperGenerator";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { existsSync, mkdirSync, rmSync, readFileSync } from "fs";
-import { join } from "path";
 import { DeployedDiamondData } from "@diamondslab/diamonds";
+import { expect } from "chai";
+import { existsSync, mkdirSync, readFileSync, rmSync } from "fs";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { join } from "path";
+import { HelperGenerator } from "../../src/framework/HelperGenerator";
 
 describe("HelperGenerator", () => {
   let mockHRE: any;

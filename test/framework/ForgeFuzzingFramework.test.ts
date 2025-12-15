@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { ForgeFuzzingFramework, ForgeTestOptions } from "../../src/framework/ForgeFuzzingFramework";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { existsSync, mkdirSync, rmSync } from "fs";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { join } from "path";
+import { ForgeFuzzingFramework, ForgeTestOptions } from "../../src/framework/ForgeFuzzingFramework";
 
 describe("ForgeFuzzingFramework", () => {
   let mockHRE: any;

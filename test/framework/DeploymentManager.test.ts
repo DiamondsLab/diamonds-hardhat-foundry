@@ -1,8 +1,8 @@
 import { expect } from "chai";
-import { DeploymentManager } from "../../src/framework/DeploymentManager";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "fs";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { existsSync, mkdirSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
+import { DeploymentManager } from "../../src/framework/DeploymentManager";
 
 describe("DeploymentManager", () => {
   let mockHRE: any;
