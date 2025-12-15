@@ -4,10 +4,14 @@
     "outDir": "./dist",
     "composite": true
   },
-  "exclude": ["./dist", "./node_modules", "./test/"],
+  "exclude": [
+    "./dist",
+    "./node_modules",
+    "./test/"
+  ],
   "references": [
     {
-      "path": "../hardhat-core/src"
+      "path": "../../node_modules/hardhat/src"
     }
   ]
 }
