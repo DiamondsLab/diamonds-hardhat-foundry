@@ -1,7 +1,8 @@
-import { extendConfig, internalTask, task } from "hardhat/config";
-import "./tasks/init";
+import { extendConfig, extendEnvironment, internalTask, task } from "hardhat/config";
+import "./types/hardhat";
 import "./tasks/deploy";
 import "./tasks/generate-helpers";
+import "./tasks/init";
 import "./tasks/test";
 
 import { existsSync, writeFileSync } from "fs";
@@ -18,10 +19,11 @@ import {
   HardhatFoundryError,
   installDependency,
 } from "./foundry";
+import { validateConfig } from "./utils/validation";
 
 // Export framework classes for programmatic use
-export { ForgeFuzzingFramework } from "./framework/ForgeFuzzingFramework";
 export { DeploymentManager } from "./framework/DeploymentManager";
+export { ForgeFuzzingFramework } from "./framework/ForgeFuzzingFramework";
 export { HelperGenerator } from "./framework/HelperGenerator";
 
 // Export types
@@ -31,7 +33,11 @@ const TASK_INIT_FOUNDRY = "init-foundry";
 
 let pluginActivated = false;
 
+// Extend config with diamondsFoundry settings
 extendConfig((config, userConfig) => {
+  // Validate and set diamondsFoundry config
+  config.diamondsFoundry = validateConfig(userConfig.diamondsFoundry);
+
   // Check foundry.toml presence. Don't warn when running foundry initialization task
   if (!existsSync(path.join(config.paths.root, "foundry.toml"))) {
     if (!process.argv.includes(TASK_INIT_FOUNDRY)) {
@@ -83,6 +89,11 @@ extendConfig((config, userConfig) => {
   }
 
   pluginActivated = true;
+});
+
+// Extend environment to add diamondsFoundry config to HRE
+extendEnvironment((hre: HardhatRuntimeEnvironment) => {
+  hre.diamondsFoundry = hre.config.diamondsFoundry;
 });
 
 // This task is in place to detect old hardhat-core versions
