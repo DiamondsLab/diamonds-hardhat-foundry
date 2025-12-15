@@ -1,13 +1,13 @@
 {
-  "name": "@diamondslab/diamonds-diamonds-hardhat-foundry",
+  "name": "@diamondslab/diamonds-hardhat-foundry",
   "version": "1.2.1",
   "description": "Hardhat plugin that adds Hardhat support to Foundry projects",
   "repository": {
     "type": "git",
-    "url": "https://github.com/diamondslab/diamonds-diamonds-hardhat-foundry",
+    "url": "https://github.com/diamondslab/diamonds-hardhat-foundry",
     "directory": "packages/diamonds-hardhat-foundry"
   },
-  "homepage": "https://github.com/diamondslab/diamonds-diamonds-hardhat-foundry",
+  "homepage": "https://github.com/diamondslab/diamonds-hardhat-foundry",
   "author": "Am0rfu5",
   "license": "MIT",
   "main": "dist/src/index.js",
@@ -43,9 +43,8 @@
     "README.md"
   ],
   "devDependencies": {
-    "@nomicfoundation/eslint-plugin-hardhat-internal-rules": "workspace:^",
-    "@nomicfoundation/eslint-plugin-slow-imports": "workspace:^",
     "@types/chai": "^4.2.0",
+    "@types/debug": "^4.1.12",
     "@types/mocha": ">=9.1.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "5.61.0",
@@ -64,12 +63,12 @@
     "typescript": "~5.0.0"
   },
   "peerDependencies": {
-    "hardhat": "workspace:^2.26.0",
     "@diamondslab/diamonds": "workspace:^",
-    "@diamondslab/hardhat-diamonds": "workspace:^"
+    "@diamondslab/hardhat-diamonds": "workspace:^",
+    "hardhat": "workspace:^2.26.0"
   },
   "dependencies": {
     "picocolors": "^1.1.0"
   },
-  "packageManager": "yarn@10.4.3"
+  "packageManager": "yarn@4.10.3"
 }
