@@ -1,5 +1,5 @@
 import { DeployedDiamondData } from "@diamondslab/diamonds";
-import { mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { join } from "path";
 import { Logger } from "../utils/logger";
@@ -80,10 +80,61 @@ export class HelperGenerator {
 
     Logger.section("Generating Example Tests");
 
-    // Implementation would create example test files based on templates
-    // For now, just log what would be created
+    const basePath = join(this.hre.config.paths.root, "test", "foundry");
+    const templatesPath = join(__dirname, "../templates");
+
     for (const type of examples) {
-      Logger.step(`Would generate ${type} example...`);
+      let templateFile = "";
+      let outputPath = "";
+
+      switch (type) {
+        case "unit":
+          templateFile = join(templatesPath, "ExampleUnitTest.t.sol.template");
+          outputPath = join(basePath, "unit", "ExampleUnit.t.sol");
+          break;
+        case "integration":
+          templateFile = join(templatesPath, "ExampleIntegrationTest.t.sol.template");
+          outputPath = join(basePath, "integration", "ExampleIntegration.t.sol");
+          break;
+        case "fuzz":
+          templateFile = join(templatesPath, "ExampleFuzzTest.t.sol.template");
+          outputPath = join(basePath, "fuzz", "ExampleFuzz.t.sol");
+          break;
+        default:
+          Logger.warn(`Unknown example type: ${type}`);
+          continue;
+      }
+
+      try {
+        // Check if template exists
+        if (!existsSync(templateFile)) {
+          Logger.warn(`Template not found: ${templateFile}`);
+          continue;
+        }
+
+        // Read template content
+        const templateContent = readFileSync(templateFile, "utf8");
+
+        // Ensure output directory exists
+        mkdirSync(join(basePath, type), { recursive: true });
+
+        // Check if file already exists
+        if (existsSync(outputPath)) {
+          Logger.info(`Skipping ${type} example (already exists): ${outputPath}`);
+          continue;
+        }
+
+        // Write example test file
+        writeFileSync(outputPath, templateContent, "utf8");
+        Logger.success(`Generated ${type} example: ${outputPath}`);
+        generated.push(outputPath);
+      } catch (error: any) {
+        Logger.error(`Failed to generate ${type} example: ${error.message}`);
+      }
+    }
+
+    if (generated.length === 0) {
+      Logger.info("No new example tests generated (may already exist)");
     }
 
     return generated;

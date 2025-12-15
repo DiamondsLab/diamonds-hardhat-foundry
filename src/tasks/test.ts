@@ -1,7 +1,7 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Logger } from "../utils/logger";
 import { ForgeFuzzingFramework, ForgeTestOptions } from "../framework/ForgeFuzzingFramework";
+import { Logger } from "../utils/logger";
 
 /**
  * Task: diamonds-forge:test

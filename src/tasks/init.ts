@@ -1,7 +1,7 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Logger } from "../utils/logger";
 import { HelperGenerator } from "../framework/HelperGenerator";
+import { Logger } from "../utils/logger";
 import { validateConfig, validateFoundryInstallation } from "../utils/validation";
 
 /**

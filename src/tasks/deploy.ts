@@ -1,7 +1,7 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Logger } from "../utils/logger";
 import { DeploymentManager } from "../framework/DeploymentManager";
+import { Logger } from "../utils/logger";
 import { validateFoundryInstallation } from "../utils/validation";
 
 /**

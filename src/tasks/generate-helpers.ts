@@ -1,8 +1,8 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Logger } from "../utils/logger";
 import { DeploymentManager } from "../framework/DeploymentManager";
 import { HelperGenerator } from "../framework/HelperGenerator";
+import { Logger } from "../utils/logger";
 
 /**
  * Task: diamonds-forge:generate-helpers
