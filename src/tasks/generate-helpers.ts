@@ -11,18 +11,14 @@ import { Logger } from "../utils/logger";
  * - Reads deployment record
  * - Generates DiamondDeployment.sol library
  * - Creates constants for addresses and facets
+ * 
+ * Use Hardhat's built-in --network flag to specify the network
  */
 task("diamonds-forge:generate-helpers", "Generate Solidity helpers from Diamond deployment")
   .addOptionalParam(
     "diamondName",
     "Name of the deployed Diamond",
     "ExampleDiamond",
-    types.string
-  )
-  .addOptionalParam(
-    "network",
-    "Network where Diamond is deployed",
-    "hardhat",
     types.string
   )
   .addOptionalParam(
@@ -35,7 +31,8 @@ task("diamonds-forge:generate-helpers", "Generate Solidity helpers from Diamond 
     Logger.section("Generating Diamond Deployment Helpers");
 
     const diamondName = taskArgs.diamondName;
-    const networkName = taskArgs.network;
+    // Use Hardhat's built-in network name from HRE
+    const networkName = hre.network.name;
     const outputDir = taskArgs.outputDir || hre.diamondsFoundry.helpersDir;
 
     Logger.info(`Diamond: ${diamondName}`);

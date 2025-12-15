@@ -12,14 +12,10 @@ import { validateFoundryInstallation } from "../utils/validation";
  * - Deploys Diamond using LocalDiamondDeployer
  * - Saves deployment record
  * - Optionally reuses existing deployment
+ * 
+ * Use Hardhat's built-in --network flag to specify the network
  */
 task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
-  .addOptionalParam(
-    "network",
-    "Target network for deployment",
-    "hardhat",
-    types.string
-  )
   .addOptionalParam(
     "diamondName",
     "Name of the Diamond to deploy",
@@ -31,7 +27,8 @@ task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
   .setAction(async (taskArgs, hre: HardhatRuntimeEnvironment) => {
     Logger.section("Deploying Diamond for Forge Testing");
 
-    const networkName = taskArgs.network;
+    // Use Hardhat's built-in network name from HRE
+    const networkName = hre.network.name;
     const diamondName = taskArgs.diamondName;
     const reuse = taskArgs.reuse;
     const force = taskArgs.force;

@@ -11,18 +11,14 @@ import { Logger } from "../utils/logger";
  * - Generates Solidity helpers
  * - Compiles Forge contracts
  * - Runs forge test with specified options
+ * 
+ * Use Hardhat's built-in --network flag to specify the network
  */
 task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
   .addOptionalParam(
     "diamondName",
     "Name of the Diamond to test",
     "ExampleDiamond",
-    types.string
-  )
-  .addOptionalParam(
-    "network",
-    "Network for deployment",
-    "hardhat",
     types.string
   )
   .addOptionalParam(
@@ -51,7 +47,8 @@ task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
     Logger.section("Running Forge Tests with Diamond");
 
     const diamondName = taskArgs.diamondName;
-    const networkName = taskArgs.network;
+    // Use Hardhat's built-in network name from HRE
+    const networkName = hre.network.name;
     const matchTest = taskArgs.matchTest;
     const matchContract = taskArgs.matchContract;
     const verbosity = taskArgs.verbosity;
