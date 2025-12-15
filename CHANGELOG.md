@@ -5,7 +5,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2025-12-15
+
+Initial public release of `@diamondslab/diamonds-hardhat-foundry`.
 
 ### Added
 - Initial release of `@diamondslab/diamonds-hardhat-foundry`
@@ -61,15 +63,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Solidity integration tests for workflow verification
   - TypeScript integration tests for API validation
 
-## [1.0.0] - TBD
-
-Initial public release.
-
-### Features
-- Complete Diamond + Foundry integration for Hardhat
-- Automated deployment and helper generation
-- Test scaffolding with examples
-- Comprehensive CLI tasks
-- Full programmatic API
-- Base contracts and utilities
-- Template system for code generation
+[1.0.0]: https://github.com/diamondslab/diamonds-hardhat-foundry/releases/tag/v1.0.0

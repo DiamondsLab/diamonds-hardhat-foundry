@@ -29,14 +29,14 @@
     "diamond-proxy"
   ],
   "scripts": {
-    "lint": "pnpm prettier --check && pnpm eslint",
-    "lint:fix": "pnpm prettier --write && pnpm eslint --fix",
+    "lint": "yarn prettier --check && yarn eslint",
+    "lint:fix": "yarn prettier --write && yarn eslint --fix",
     "eslint": "eslint 'src/**/*.ts'",
     "prettier": "prettier \"**/*.{js,md,json}\"",
-    "pretest": "cd ../.. && pnpm build",
+    "pretest": "cd ../.. && yarn build",
     "test": "mocha --recursive \"test/**/*.ts\" --exit",
     "build": "tsc --build .",
-    "prepublishOnly": "pnpm build",
+    "prepublishOnly": "yarn build",
     "clean": "rimraf dist"
   },
   "files": [

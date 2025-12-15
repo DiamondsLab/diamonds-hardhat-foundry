@@ -50,7 +50,7 @@ import type { HardhatUserConfig } from "hardhat/config";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.28",
-  
+
   // Optional: Configure diamonds-foundry settings
   diamondsFoundry: {
     helpersDir: "test/foundry/helpers",
@@ -58,8 +58,8 @@ const config: HardhatUserConfig = {
     exampleTests: ["unit", "integration", "fuzz"],
     defaultNetwork: "hardhat",
     reuseDeployment: false,
-    forgeTestArgs: ["-vvv"]
-  }
+    forgeTestArgs: ["-vvv"],
+  },
 };
 
 export default config;
@@ -72,6 +72,7 @@ npx hardhat diamonds-forge:init
 ```
 
 This creates:
+
 ```
 test/foundry/
 ├── helpers/           # Generated Diamond deployment helpers
@@ -93,6 +94,7 @@ npx hardhat diamonds-forge:generate-helpers --diamond-name YourDiamond
 ```
 
 This generates `test/foundry/helpers/DiamondDeployment.sol` with:
+
 - Diamond contract address
 - All facet addresses
 - Helper functions for test setup
@@ -110,11 +112,13 @@ npx hardhat diamonds-forge:test
 Initialize the Foundry test directory structure.
 
 **Options:**
+
 - `--helpers-dir <path>` - Custom directory for helpers (default: `test/foundry/helpers`)
 - `--examples` - Generate example tests (default: from config)
 - `--force` - Overwrite existing files
 
 **Example:**
+
 ```bash
 npx hardhat diamonds-forge:init --helpers-dir test/forge/helpers --examples
 ```
@@ -124,12 +128,14 @@ npx hardhat diamonds-forge:init --helpers-dir test/forge/helpers --examples
 Deploy a Diamond contract to the specified network.
 
 **Options:**
+
 - `--diamond-name <name>` - Name of the Diamond to deploy (default: from config)
 - `--network <name>` - Network to deploy to (default: `hardhat`)
 - `--reuse` - Reuse existing deployment if found (default: from config)
 - `--force` - Force new deployment even if one exists
 
 **Example:**
+
 ```bash
 npx hardhat diamonds-forge:deploy --diamond-name MyDiamond --network sepolia
 ```
@@ -139,11 +145,13 @@ npx hardhat diamonds-forge:deploy --diamond-name MyDiamond --network sepolia
 Generate Solidity helper contract with deployment data.
 
 **Options:**
+
 - `--diamond-name <name>` - Name of the Diamond (default: from config)
 - `--output-dir <path>` - Output directory for helpers (default: from config)
 - `--network <name>` - Network to use for deployment data (default: `hardhat`)
 
 **Example:**
+
 ```bash
 npx hardhat diamonds-forge:generate-helpers --diamond-name MyDiamond --output-dir test/foundry/helpers
 ```
@@ -153,6 +161,7 @@ npx hardhat diamonds-forge:generate-helpers --diamond-name MyDiamond --output-di
 Run Foundry tests with optional deployment and helper generation.
 
 **Options:**
+
 - `--diamond-name <name>` - Diamond to deploy/test (default: from config)
 - `--network <name>` - Network for deployment (default: from config)
 - `--skip-deployment` - Skip deployment step
@@ -163,6 +172,7 @@ Run Foundry tests with optional deployment and helper generation.
 - `--gas-report` - Show gas usage report
 
 **Example:**
+
 ```bash
 # Run all tests with gas reporting
 npx hardhat diamonds-forge:test --gas-report
@@ -180,10 +190,10 @@ Use the framework classes directly in your scripts:
 
 ```typescript
 import hre from "hardhat";
-import { 
-  ForgeFuzzingFramework, 
-  DeploymentManager, 
-  HelperGenerator 
+import {
+  ForgeFuzzingFramework,
+  DeploymentManager,
+  HelperGenerator,
 } from "@diamondslab/diamonds-hardhat-foundry";
 
 // Deploy a Diamond
@@ -204,8 +214,8 @@ await framework.runTests({
   skipHelpers: false,
   forgeTestOptions: {
     matchTest: "testFuzz",
-    verbosity: 3
-  }
+    verbosity: 3,
+  },
 });
 ```
 
@@ -214,6 +224,7 @@ await framework.runTests({
 Manages Diamond contract deployments.
 
 **Methods:**
+
 - `deploy(diamondName, networkName, force?)` - Deploy a Diamond
 - `getDeployment(diamondName, networkName, chainId?)` - Get deployment data
 - `ensureDeployment(diamondName, networkName, force?)` - Deploy if needed
@@ -224,6 +235,7 @@ Manages Diamond contract deployments.
 Generates Solidity test helpers and examples.
 
 **Methods:**
+
 - `scaffoldProject(outputDir?, generateExamples?)` - Create test directory structure
 - `generateDeploymentHelpers(diamondName, networkName, outputDir?)` - Generate DiamondDeployment.sol
 - `generateExampleTests(testTypes?, outputDir?)` - Generate example test files
@@ -233,6 +245,7 @@ Generates Solidity test helpers and examples.
 Orchestrates the complete test workflow.
 
 **Methods:**
+
 - `runTests(options)` - Run complete test workflow
 - `deployOnly(diamondName?, networkName?, force?)` - Deploy only
 - `generateHelpersOnly(diamondName?, networkName?, outputDir?)` - Generate helpers only
@@ -246,35 +259,35 @@ export default {
   diamondsFoundry: {
     // Directory for generated helper contracts
     helpersDir: "test/foundry/helpers",
-    
+
     // Whether to generate example tests during init
     generateExamples: true,
-    
+
     // Types of example tests to generate
     exampleTests: ["unit", "integration", "fuzz"],
-    
+
     // Default network for deployments
     defaultNetwork: "hardhat",
-    
+
     // Reuse existing deployments instead of redeploying
     reuseDeployment: false,
-    
+
     // Default arguments to pass to forge test
-    forgeTestArgs: ["-vv", "--gas-report"]
-  }
+    forgeTestArgs: ["-vv", "--gas-report"],
+  },
 };
 ```
 
 **Configuration Options:**
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `helpersDir` | `string` | `"test/foundry/helpers"` | Directory for generated helpers |
-| `generateExamples` | `boolean` | `true` | Generate example tests on init |
-| `exampleTests` | `array` | `["unit", "integration", "fuzz"]` | Types of examples to generate |
-| `defaultNetwork` | `string` | `"hardhat"` | Default deployment network |
-| `reuseDeployment` | `boolean` | `false` | Reuse existing deployments |
-| `forgeTestArgs` | `string[]` | `[]` | Default forge test arguments |
+| Option             | Type       | Default                           | Description                     |
+| ------------------ | ---------- | --------------------------------- | ------------------------------- |
+| `helpersDir`       | `string`   | `"test/foundry/helpers"`          | Directory for generated helpers |
+| `generateExamples` | `boolean`  | `true`                            | Generate example tests on init  |
+| `exampleTests`     | `array`    | `["unit", "integration", "fuzz"]` | Types of examples to generate   |
+| `defaultNetwork`   | `string`   | `"hardhat"`                       | Default deployment network      |
+| `reuseDeployment`  | `boolean`  | `false`                           | Reuse existing deployments      |
+| `forgeTestArgs`    | `string[]` | `[]`                              | Default forge test arguments    |
 
 ## Base Contracts
 
@@ -289,7 +302,7 @@ import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol"
 
 contract MyTest is Test {
     using DiamondForgeHelpers for *;
-    
+
     function testDiamond() public {
         address diamond = DiamondForgeHelpers.getDiamondAddress();
         DiamondForgeHelpers.logDiamondInfo(diamond);
@@ -310,7 +323,7 @@ contract MyFuzzTest is DiamondFuzzBase {
         super.setUp();
         // Your setup
     }
-    
+
     function testFuzz_Transfer(address to, uint256 amount) public {
         assumeValidAddress(to);
         amount = boundValue(amount, 1, 1000 ether);
@@ -342,21 +355,21 @@ import { ForgeFuzzingFramework } from "@diamondslab/diamonds-hardhat-foundry";
 
 async function main() {
   const framework = new ForgeFuzzingFramework(hre);
-  
+
   // Deploy only
   await framework.deployOnly("MyDiamond", "sepolia");
-  
+
   // Generate helpers
   await framework.generateHelpersOnly("MyDiamond", "sepolia");
-  
+
   // Run specific tests
   await framework.runTests({
     skipDeployment: true,
     skipHelpers: true,
     forgeTestOptions: {
       matchContract: "MyIntegrationTest",
-      verbosity: 4
-    }
+      verbosity: 4,
+    },
   });
 }
 
@@ -378,8 +391,8 @@ jobs:
       - uses: foundry-rs/foundry-toolchain@v1
       - uses: actions/setup-node@v3
         with:
-          node-version: '18'
-      
+          node-version: "18"
+
       - run: npm ci
       - run: npx hardhat diamonds-forge:deploy
       - run: npx hardhat diamonds-forge:test --gas-report
@@ -404,12 +417,12 @@ import "@diamondslab/diamonds-hardhat-foundry";
 export default {
   diamonds: {
     diamondsPath: "./diamonds",
-    deploymentsPath: "./diamonds/ExampleDiamond/deployments"
+    deploymentsPath: "./diamonds/ExampleDiamond/deployments",
   },
   diamondsFoundry: {
     helpersDir: "test/foundry/helpers",
-    defaultNetwork: "hardhat"
-  }
+    defaultNetwork: "hardhat",
+  },
 };
 ```
 
@@ -420,6 +433,7 @@ export default {
 **Error:** `Foundry not installed`
 
 **Solution:** Install Foundry from [getfoundry.sh](https://getfoundry.sh/):
+
 ```bash
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
@@ -436,6 +450,7 @@ foundryup
 **Error:** `No deployment record found`
 
 **Solution:** Deploy your Diamond first:
+
 ```bash
 npx hardhat diamonds-forge:deploy --diamond-name YourDiamond
 ```
@@ -445,6 +460,7 @@ npx hardhat diamonds-forge:deploy --diamond-name YourDiamond
 **Error:** Compilation errors in `DiamondDeployment.sol`
 
 **Solution:** Ensure:
+
 1. Foundry is properly installed
 2. Your `foundry.toml` includes the correct remappings
 3. The Diamond was successfully deployed before generating helpers
@@ -454,6 +470,7 @@ npx hardhat diamonds-forge:deploy --diamond-name YourDiamond
 **Warning:** `@diamondslab/diamonds not found`
 
 **Solution:** Install required peer dependencies:
+
 ```bash
 npm install --save-dev @diamondslab/diamonds @diamondslab/hardhat-diamonds
 ```

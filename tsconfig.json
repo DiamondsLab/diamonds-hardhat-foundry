@@ -4,10 +4,7 @@
     "checkJs": false,
     "target": "ES2022",
     "module": "nodenext",
-    "lib": [
-      "ES2022",
-      "DOM"
-    ],
+    "lib": ["ES2022", "DOM"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -23,9 +20,7 @@
     "moduleResolution": "nodenext",
     "composite": true
   },
-  "include": [
-    "./src/**/*"
-  ],
+  "include": ["./src/**/*"],
   "exclude": [
     "archives",
     "dist",
