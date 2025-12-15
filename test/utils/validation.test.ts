@@ -1,10 +1,10 @@
 import { expect } from "chai";
-import {
-  validateConfig,
-  validateFoundryInstallation,
-  validatePeerDependency,
-} from "../../src/utils/validation";
 import { DEFAULT_CONFIG } from "../../src/types/config";
+import {
+    validateConfig,
+    validateFoundryInstallation,
+    validatePeerDependency,
+} from "../../src/utils/validation";
 
 describe("Validation Utilities", () => {
   describe("validateConfig", () => {

@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import { existsSync } from "fs";
+import { DEFAULT_CONFIG, DiamondsFoundryConfig } from "../types/config";
 import { Logger } from "./logger";
-import { DiamondsFoundryConfig, DEFAULT_CONFIG } from "../types/config";
 
 /**
  * Validation utilities for diamonds-hardhat-foundry plugin

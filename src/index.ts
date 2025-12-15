@@ -1,9 +1,9 @@
 import { extendConfig, extendEnvironment, internalTask, task } from "hardhat/config";
-import "./types/hardhat";
 import "./tasks/deploy";
 import "./tasks/generate-helpers";
 import "./tasks/init";
 import "./tasks/test";
+import "./types/hardhat";
 
 import { existsSync, writeFileSync } from "fs";
 import {

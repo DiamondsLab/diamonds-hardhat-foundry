@@ -19,5 +19,6 @@ declare module "hardhat/types/config" {
 declare module "hardhat/types/runtime" {
   export interface HardhatRuntimeEnvironment {
     diamondsFoundry: Required<DiamondsFoundryConfig>;
+    ethers: any; // Will be provided by @nomicfoundation/hardhat-ethers
   }
 }
