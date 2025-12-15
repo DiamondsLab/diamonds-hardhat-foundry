@@ -1,6 +1,6 @@
 {
   "name": "@diamondslab/diamonds-hardhat-foundry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hardhat plugin that integrates Foundry testing with Diamond proxy contracts, providing deployment helpers and fuzzing support",
   "repository": {
     "type": "git",
