@@ -1,55 +1,21 @@
 import { Diamond } from "@diamondslab/diamonds";
+import {
+  LocalDiamondDeployer,
+  LocalDiamondDeployerConfig,
+} from "@diamondslab/hardhat-diamonds";
 import { existsSync } from "fs";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { join } from "path";
 import { Logger } from "../utils/logger";
 
-// Type for LocalDiamondDeployer (avoiding import issues)
-type LocalDiamondDeployerConfig = {
-  diamondName: string;
-  networkName: string;
-  provider: any;
-  chainId: number;
-  writeDeployedDiamondData: boolean;
-};
-
 /**
  * DeploymentManager - Manages Diamond deployment lifecycle for Forge testing
  * 
- * Note: This class dynamically requires LocalDiamondDeployer from the workspace
- * to avoid module resolution issues in the published package.
+ * Uses LocalDiamondDeployer from @diamondslab/hardhat-diamonds peer dependency
+ * for portable, dependency-managed Diamond deployments.
  */
 export class DeploymentManager {
   constructor(private hre: HardhatRuntimeEnvironment) {}
-
-  /**
-   * Get LocalDiamondDeployer class
-   * @private
-   */
-  private async getDeployerClass(): Promise<any> {
-    // LocalDiamondDeployer is in the workspace scripts, not exported from the module
-    // This will need to be available in user projects
-    const localDeployerPath = join(
-      this.hre.config.paths.root,
-      "scripts/setup/LocalDiamondDeployer"
-    );
-    
-    if (!existsSync(localDeployerPath + ".ts") && !existsSync(localDeployerPath + ".js")) {
-      throw new Error(
-        "LocalDiamondDeployer not found. Make sure your project has scripts/setup/LocalDiamondDeployer.ts"
-      );
-    }
-    
-    try {
-      // Use require for better TypeScript support in Hardhat environment
-      const deployer = require(localDeployerPath);
-      return deployer.LocalDiamondDeployer;
-    } catch (error) {
-      throw new Error(
-        `Failed to load LocalDiamondDeployer: ${error instanceof Error ? error.message : String(error)}`
-      );
-    }
-  }
 
   /**
    * Deploy a Diamond using LocalDiamondDeployer
@@ -74,42 +40,53 @@ export class DeploymentManager {
       Logger.info("Deployment record exists, using existing deployment");
       Logger.info("Use --force to redeploy");
       
-      const LocalDiamondDeployer = await this.getDeployerClass();
-      const deployer = await LocalDiamondDeployer.getInstance({
+      try {
+        const deployer = await LocalDiamondDeployer.getInstance(this.hre, {
+          diamondName,
+          networkName,
+          provider,
+          chainId,
+          writeDeployedDiamondData: true,
+        } as LocalDiamondDeployerConfig);
+        
+        return await deployer.getDiamond();
+      } catch (error) {
+        throw new Error(
+          `Failed to load deployment. Ensure @diamondslab/hardhat-diamonds is installed.\n` +
+          `Error: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
+    }
+
+    Logger.step("Initializing LocalDiamondDeployer...");
+    
+    try {
+      const deployer = await LocalDiamondDeployer.getInstance(this.hre, {
         diamondName,
         networkName,
         provider,
         chainId,
         writeDeployedDiamondData: true,
       } as LocalDiamondDeployerConfig);
+
+      await deployer.setVerbose(false); // Reduce noise, use our logger instead
+
+      Logger.step("Deploying Diamond contract...");
+      const diamond = await deployer.getDiamondDeployed();
       
-      return await deployer.getDiamond();
+      const deployedData = diamond.getDeployedDiamondData();
+      
+      Logger.success(`Diamond deployed at: ${deployedData.DiamondAddress}`);
+      Logger.info(`Deployer: ${deployedData.DeployerAddress}`);
+      Logger.info(`Facets deployed: ${Object.keys(deployedData.DeployedFacets || {}).length}`);
+
+      return diamond;
+    } catch (error) {
+      throw new Error(
+        `Failed to deploy diamond. Ensure @diamondslab/hardhat-diamonds is installed.\n` +
+        `Error: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
-
-    Logger.step("Initializing LocalDiamondDeployer...");
-    
-    const LocalDiamondDeployer = await this.getDeployerClass();
-    
-    const deployer = await LocalDiamondDeployer.getInstance({
-      diamondName,
-      networkName,
-      provider,
-      chainId,
-      writeDeployedDiamondData: true,
-    } as LocalDiamondDeployerConfig);
-
-    await deployer.setVerbose(false); // Reduce noise, use our logger instead
-
-    Logger.step("Deploying Diamond contract...");
-    const diamond = await deployer.getDiamondDeployed();
-    
-    const deployedData = diamond.getDeployedDiamondData();
-    
-    Logger.success(`Diamond deployed at: ${deployedData.DiamondAddress}`);
-    Logger.info(`Deployer: ${deployedData.DeployerAddress}`);
-    Logger.info(`Facets deployed: ${Object.keys(deployedData.DeployedFacets || {}).length}`);
-
-    return diamond;
   }
 
   /**
@@ -133,8 +110,7 @@ export class DeploymentManager {
         return null;
       }
 
-      const LocalDiamondDeployer = await this.getDeployerClass();
-      const deployer = await LocalDiamondDeployer.getInstance({
+      const deployer = await LocalDiamondDeployer.getInstance(this.hre, {
         diamondName,
         networkName,
         provider,
@@ -144,7 +120,7 @@ export class DeploymentManager {
 
       return await deployer.getDiamond();
     } catch (error) {
-      Logger.error(`Failed to get deployment: ${error}`);
+      Logger.error(`Failed to get deployment. Ensure @diamondslab/hardhat-diamonds is installed: ${error}`);
       return null;
     }
   }
