@@ -30,13 +30,17 @@ pnpm add -D @diamondslab/diamonds-hardhat-foundry
 
 - **Foundry**: Install from [getfoundry.sh](https://getfoundry.sh/)
 - **Hardhat**: `^2.26.0` or later
-- **Peer Dependencies**:
+- **Required Peer Dependencies**:
   - `@diamondslab/diamonds` - Core Diamond deployment library
-  - `@diamondslab/hardhat-diamonds` - Hardhat Diamond configuration helpers
+  - `@diamondslab/hardhat-diamonds` - Hardhat Diamond configuration and LocalDiamondDeployer
+  - `@nomicfoundation/hardhat-ethers` - Ethers.js integration
+  - `ethers` - Ethereum library
 
 ```bash
-npm install --save-dev @diamondslab/diamonds @diamondslab/hardhat-diamonds hardhat
+npm install --save-dev @diamondslab/diamonds @diamondslab/hardhat-diamonds @nomicfoundation/hardhat-ethers ethers hardhat
 ```
+
+> **Note**: Version 2.0.0+ requires `@diamondslab/hardhat-diamonds` as a peer dependency for LocalDiamondDeployer. See [MIGRATION.md](./MIGRATION.md) for upgrade instructions from v1.x.
 
 ## Quick Start
 
@@ -98,6 +102,156 @@ This generates `test/foundry/helpers/DiamondDeployment.sol` with:
 - Diamond contract address
 - All facet addresses
 - Helper functions for test setup
+
+## Importing Helper Contracts
+
+Version 2.0.0+ provides importable Solidity helper contracts for your tests:
+
+### DiamondFuzzBase - Base Contract for Fuzz Tests
+
+Extend `DiamondFuzzBase` to create Diamond fuzz tests with built-in helpers:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "forge-std/Test.sol";
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+import "../helpers/DiamondDeployment.sol";
+
+contract MyDiamondFuzzTest is DiamondFuzzBase {
+    /// Override to load your deployed Diamond
+    function _loadDiamondAddress() internal view override returns (address) {
+        return DiamondDeployment.diamond();
+    }
+
+    function setUp() public override {
+        super.setUp(); // Loads Diamond and ABI
+        // Your additional setup
+    }
+
+    function testFuzz_SomeFunction(address user, uint256 amount) public {
+        // Use built-in helpers
+        vm.assume(DiamondForgeHelpers.isValidTestAddress(user));
+        vm.assume(DiamondForgeHelpers.isValidTestAmount(amount));
+        
+        bytes4 selector = bytes4(keccak256("transfer(address,uint256)"));
+        bytes memory data = abi.encode(user, amount);
+        (bool success, ) = _callDiamond(selector, data);
+        assertTrue(success);
+    }
+}
+```
+
+**Built-in DiamondFuzzBase Methods:**
+
+- `_loadDiamondAddress()` - Override to provide Diamond address
+- `_getDiamondABIPath()` - Override to customize ABI file path
+- `_callDiamond(selector, data)` - Call Diamond function
+- `_callDiamondWithValue(selector, data, value)` - Call payable function
+- `_expectDiamondRevert(selector, data, expectedError)` - Test reverts
+- `_verifyFacetRouting(selector, expectedFacet)` - Check selector routing
+- `_measureDiamondGas(selector, data)` - Measure gas consumption
+- `_getDiamondOwner()` - Get Diamond owner address
+- `_hasRole(role, account)` - Check role-based access control
+- `_grantRole(role, account)` - Grant role (requires permissions)
+- `_revokeRole(role, account)` - Revoke role
+
+### DiamondForgeHelpers - Utility Library
+
+Use `DiamondForgeHelpers` for validation, assertions, and DiamondLoupe queries:
+
+```solidity
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
+
+contract MyTest is Test {
+    using DiamondForgeHelpers for address;
+
+    function setUp() public {
+        address diamond = deployDiamond();
+        
+        // Validate Diamond deployment
+        DiamondForgeHelpers.assertValidDiamond(diamond);
+        
+        // Validate facet
+        address facet = getFacet();
+        DiamondForgeHelpers.assertValidFacet(facet, "MyFacet");
+    }
+
+    function testFuzz_ValidInputs(address addr, uint256 amount) public {
+        // Filter fuzz inputs
+        vm.assume(DiamondForgeHelpers.isValidTestAddress(addr));
+        vm.assume(DiamondForgeHelpers.isValidTestAmount(amount));
+        // Your test logic
+    }
+
+    function testSelectorRouting() public {
+        bytes4 selector = bytes4(keccak256("someFunction()"));
+        
+        // Assert selector exists
+        DiamondForgeHelpers.assertSelectorExists(diamond, selector);
+        
+        // Assert routing to expected facet
+        DiamondForgeHelpers.assertSelectorRouting(diamond, selector, expectedFacet);
+        
+        // Get facet address
+        address facet = DiamondForgeHelpers.getFacetAddress(diamond, selector);
+    }
+}
+```
+
+**DiamondForgeHelpers Functions:**
+
+- `assertValidDiamond(address)` - Validate Diamond deployment
+- `assertValidFacet(address, name)` - Validate facet deployment
+- `isValidTestAddress(address)` - Filter fuzz addresses
+- `isValidTestAmount(uint256)` - Filter fuzz amounts
+- `assertSelectorExists(diamond, selector)` - Verify selector registered
+- `assertSelectorRouting(diamond, selector, facet)` - Verify routing
+- `getFacetAddress(diamond, selector)` - Get facet for selector
+- `getFacetAddresses(diamond)` - Get all facet addresses
+- `getFacetSelectors(diamond, facet)` - Get selectors for facet
+- `getDiamondOwner(diamond)` - Get owner address
+- `boundAddress(seed)` - Generate valid fuzz address
+- `boundAmount(seed, min, max)` - Generate valid fuzz amount
+- `selectorsEqual(a, b)` - Compare selector arrays
+
+### DiamondABILoader - ABI File Parser
+
+Load and parse Diamond ABI files in your tests:
+
+```solidity
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondABILoader.sol";
+
+contract MyIntegrationTest is Test {
+    using DiamondABILoader for string;
+
+    function testABILoading() public {
+        // Load Diamond ABI
+        string memory abiJson = DiamondABILoader.loadDiamondABI("./diamond-abi/MyDiamond.json");
+        
+        // Extract selectors and signatures
+        bytes4[] memory selectors = abiJson.extractSelectors();
+        string[] memory signatures = abiJson.extractSignatures();
+        
+        console.log("Functions found:", selectors.length);
+        
+        // Get function info
+        for (uint i = 0; i < selectors.length; i++) {
+            (bytes4 sel, string memory sig) = abiJson.getFunctionInfo(i);
+            console.log("Function:", sig);
+        }
+    }
+}
+```
+
+**DiamondABILoader Functions:**
+
+- `loadDiamondABI(path)` - Load ABI JSON from file
+- `extractSelectors(abiJson)` - Extract all function selectors
+- `extractSignatures(abiJson)` - Extract all function signatures
+- `getFunctionInfo(abiJson, index)` - Get selector and signature
+- `verifySelectorsMatch(abiJson, expectedSelectors)` - Validate selectors
 
 ### 5. Run Foundry Tests
 
