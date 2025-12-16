@@ -34,12 +34,19 @@ export class DeploymentManager {
       "scripts/setup/LocalDiamondDeployer"
     );
     
-    try {
-      const deployer = await import(localDeployerPath);
-      return deployer.LocalDiamondDeployer;
-    } catch {
+    if (!existsSync(localDeployerPath + ".ts") && !existsSync(localDeployerPath + ".js")) {
       throw new Error(
         "LocalDiamondDeployer not found. Make sure your project has scripts/setup/LocalDiamondDeployer.ts"
+      );
+    }
+    
+    try {
+      // Use require for better TypeScript support in Hardhat environment
+      const deployer = require(localDeployerPath);
+      return deployer.LocalDiamondDeployer;
+    } catch (error) {
+      throw new Error(
+        `Failed to load LocalDiamondDeployer: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
