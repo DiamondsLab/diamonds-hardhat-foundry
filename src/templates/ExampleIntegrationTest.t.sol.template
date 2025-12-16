@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondABILoader.sol";
 import "../helpers/DiamondDeployment.sol";
 
 /**
@@ -11,6 +13,9 @@ import "../helpers/DiamondDeployment.sol";
  * @dev Tests interactions between multiple facets and Diamond functionality
  */
 contract ExampleIntegrationTest is Test {
+    using DiamondForgeHelpers for address;
+    using DiamondABILoader for string;
+
     address diamond;
     address deployer;
     
@@ -22,6 +27,9 @@ contract ExampleIntegrationTest is Test {
         // Load Diamond deployment data
         diamond = DiamondDeployment.diamond();
         deployer = DiamondDeployment.deployer();
+
+        // Validate Diamond
+        DiamondForgeHelpers.assertValidDiamond(diamond);
 
         // Set up test users
         user1 = makeAddr("user1");

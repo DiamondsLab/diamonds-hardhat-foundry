@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "../helpers/DiamondFuzzBase.sol";
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
 import "../helpers/DiamondDeployment.sol";
 
 /**
@@ -12,17 +13,19 @@ import "../helpers/DiamondDeployment.sol";
  * @dev Uses DiamondFuzzBase for common fuzz testing utilities
  */
 contract ExampleFuzzTest is DiamondFuzzBase {
+    using DiamondForgeHelpers for address;
+
+    /// @notice Override to load Diamond from deployment
+    function _loadDiamondAddress() internal view override returns (address) {
+        return DiamondDeployment.diamond();
+    }
+
     function setUp() public override {
         super.setUp();
         
-        // Load Diamond deployment
-        setDiamondAddress(DiamondDeployment.diamond());
-        
-        // Register facets (customize for your Diamond)
-        // registerFacet("FacetName", DiamondDeployment.facetName());
-        
         console.log("Fuzz test setup complete");
         console.log("Diamond:", diamond);
+        console.log("Functions loaded:", diamondSelectors.length);
     }
 
     /**
@@ -31,11 +34,14 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      */
     function testFuzz_AddressInput(address randomAddress) public {
         // Filter invalid addresses
-        assumeValidAddress(randomAddress);
+        vm.assume(DiamondForgeHelpers.isValidTestAddress(randomAddress));
         
         // TODO: Test your Diamond function with fuzzed address
         // Example:
-        // MyDiamond(diamond).someFunction(randomAddress);
+        // bytes4 selector = bytes4(keccak256("someFunction(address)"));
+        // bytes memory data = abi.encode(randomAddress);
+        // (bool success,) = _callDiamond(selector, data);
+        // assertTrue(success);
         
         assertTrue(true, "Replace with actual fuzz test");
     }
@@ -46,11 +52,13 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      */
     function testFuzz_AmountInput(uint256 amount) public {
         // Bound the amount to valid range
-        assumeValidAmount(amount);
+        vm.assume(DiamondForgeHelpers.isValidTestAmount(amount));
         
         // TODO: Test your Diamond function with fuzzed amount
         // Example:
-        // MyDiamond(diamond).transfer(user1, amount);
+        // bytes4 selector = bytes4(keccak256("transfer(address,uint256)"));
+        // bytes memory data = abi.encode(user1, amount);
+        // (bool success,) = _callDiamond(selector, data);
         
         assertTrue(true, "Replace with actual fuzz test");
     }
@@ -67,8 +75,8 @@ contract ExampleFuzzTest is DiamondFuzzBase {
         bytes memory data
     ) public {
         // Filter inputs
-        assumeValidAddress(addr);
-        assumeValidAmount(value);
+        vm.assume(DiamondForgeHelpers.isValidTestAddress(addr));
+        vm.assume(DiamondForgeHelpers.isValidTestAmount(value));
         vm.assume(data.length > 0);
         vm.assume(data.length < 1024); // Reasonable size limit
         
@@ -86,8 +94,9 @@ contract ExampleFuzzTest is DiamondFuzzBase {
         vm.assume(badValue > type(uint128).max);
         
         // TODO: Test that function reverts with invalid input
-        // expectRevertWithMessage("Invalid amount");
-        // MyDiamond(diamond).someFunction(badValue);
+        // bytes4 selector = bytes4(keccak256("someFunction(uint256)"));
+        // bytes memory data = abi.encode(badValue);
+        // _expectDiamondRevert(selector, data, bytes(""));
         
         assertTrue(true, "Replace with actual revert fuzz test");
     }
@@ -98,7 +107,7 @@ contract ExampleFuzzTest is DiamondFuzzBase {
      */
     function testFuzz_BoundedValue(uint256 rawValue) public {
         // Bound value to specific range (e.g., 1 to 1000)
-        uint256 boundedValue = boundValue(rawValue, 1, 1000);
+        uint256 boundedValue = bound(rawValue, 1, 1000);
         
         // TODO: Test with bounded value
         assertGe(boundedValue, 1, "Value should be >= 1");

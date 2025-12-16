@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
 import "../helpers/DiamondDeployment.sol";
 
 /**
@@ -11,6 +12,8 @@ import "../helpers/DiamondDeployment.sol";
  * @dev This is a template - customize for your specific Diamond implementation
  */
 contract ExampleUnitTest is Test {
+    using DiamondForgeHelpers for address;
+
     address diamond;
     address deployer;
 
@@ -21,6 +24,9 @@ contract ExampleUnitTest is Test {
 
         console.log("Diamond deployed at:", diamond);
         console.log("Deployed by:", deployer);
+        
+        // Validate Diamond deployment
+        DiamondForgeHelpers.assertValidDiamond(diamond);
     }
 
     /**
