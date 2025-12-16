@@ -1,6 +1,5 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeploymentManager } from "../framework/DeploymentManager";
 import { Logger } from "../utils/logger";
 import { validateFoundryInstallation } from "../utils/validation";
 
@@ -56,6 +55,9 @@ task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
 
     // Step 2: Deploy or reuse Diamond
     Logger.step("Deploying Diamond contract...");
+    
+    // Lazy-load DeploymentManager to avoid circular dependency
+    const { DeploymentManager } = await import("../framework/DeploymentManager.js");
     const deploymentManager = new DeploymentManager(hre);
 
     try {

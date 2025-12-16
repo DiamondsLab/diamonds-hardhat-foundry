@@ -1,9 +1,8 @@
-import { Diamond } from "@diamondslab/diamonds";
+import { Diamond } from "@diamondslab/diamonds/core";
 import {
   LocalDiamondDeployer,
   LocalDiamondDeployerConfig,
-} from "@diamondslab/hardhat-diamonds";
-import "@diamondslab/hardhat-diamonds/dist/type-extensions";
+} from "@diamondslab/hardhat-diamonds/dist/lib";
 import "@nomicfoundation/hardhat-ethers";
 import { existsSync } from "fs";
 import type { HardhatRuntimeEnvironment } from "hardhat/types";

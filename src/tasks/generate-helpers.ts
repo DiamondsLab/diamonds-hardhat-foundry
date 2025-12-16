@@ -1,7 +1,5 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeploymentManager } from "../framework/DeploymentManager";
-import { HelperGenerator } from "../framework/HelperGenerator";
 import { Logger } from "../utils/logger";
 
 /**
@@ -39,6 +37,9 @@ task("diamonds-forge:generate-helpers", "Generate Solidity helpers from Diamond 
     Logger.info(`Network: ${networkName}`);
     Logger.info(`Output: ${outputDir}`);
 
+    // Lazy-load framework to avoid circular dependency during config loading
+    const { DeploymentManager } = await import("../framework/DeploymentManager.js");
+
     // Step 1: Get deployment
     Logger.step("Loading deployment data...");
     const deploymentManager = new DeploymentManager(hre);
@@ -61,6 +62,9 @@ task("diamonds-forge:generate-helpers", "Generate Solidity helpers from Diamond 
       const provider = hre.ethers.provider;
       const network = await provider.getNetwork();
       const chainId = Number(network.chainId);
+
+      // Lazy-load HelperGenerator
+      const { HelperGenerator } = await import("../framework/HelperGenerator.js");
 
       // Step 3: Generate helpers
       Logger.step("Generating Solidity helpers...");

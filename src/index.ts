@@ -21,11 +21,6 @@ import {
 } from "./foundry";
 import { validateConfig } from "./utils/validation";
 
-// Export framework classes for programmatic use
-export { DeploymentManager } from "./framework/DeploymentManager";
-export { ForgeFuzzingFramework } from "./framework/ForgeFuzzingFramework";
-export { HelperGenerator } from "./framework/HelperGenerator";
-
 // Export types
 export * from "./types/config";
 

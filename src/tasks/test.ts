@@ -1,6 +1,5 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { ForgeFuzzingFramework, ForgeTestOptions } from "../framework/ForgeFuzzingFramework";
 import { Logger } from "../utils/logger";
 
 /**
@@ -65,6 +64,10 @@ task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
     if (gasReport) Logger.info("Gas Report: enabled");
     if (skipDeployment) Logger.info("Skip Deployment: true");
     if (skipHelpers) Logger.info("Skip Helpers: true");
+
+    // Lazy-load framework to avoid circular dependency during config loading
+    const { ForgeFuzzingFramework } = await import("../framework/ForgeFuzzingFramework.js");
+    type ForgeTestOptions = Parameters<InstanceType<typeof ForgeFuzzingFramework>["runTests"]>[0];
 
     // Create test options
     const options: ForgeTestOptions = {

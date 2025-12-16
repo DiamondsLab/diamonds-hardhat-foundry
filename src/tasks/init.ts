@@ -1,6 +1,5 @@
 import { task, types } from "hardhat/config";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { HelperGenerator } from "../framework/HelperGenerator";
 import { Logger } from "../utils/logger";
 import { validateConfig, validateFoundryInstallation } from "../utils/validation";
 
@@ -50,6 +49,9 @@ task("diamonds-forge:init", "Initialize Forge testing structure for Diamond cont
 
     // Step 3: Scaffold project structure
     Logger.step("Creating test directory structure...");
+    
+    // Lazy-load framework classes to avoid circular dependency
+    const { HelperGenerator } = await import("../framework/HelperGenerator.js");
     const generator = new HelperGenerator(hre);
     
     try {
