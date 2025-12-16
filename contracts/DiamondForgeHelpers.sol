@@ -11,7 +11,7 @@ import "forge-std/Test.sol";
 /// @custom:example
 /// ```solidity
 /// import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
-/// 
+///
 /// contract MyTest is Test {
 ///     using DiamondForgeHelpers for address;
 ///
@@ -54,7 +54,10 @@ library DiamondForgeHelpers {
         // Try calling facets() which should exist in any EIP-2535 Diamond
         (bool success, ) = diamond.staticcall(abi.encodeWithSignature("facets()"));
         if (!success) {
-            revert InvalidDiamond(diamond, "Diamond does not support DiamondLoupe (facets() call failed)");
+            revert InvalidDiamond(
+                diamond,
+                "Diamond does not support DiamondLoupe (facets() call failed)"
+            );
         }
     }
 
@@ -81,10 +84,11 @@ library DiamondForgeHelpers {
     /// @param addr The address to validate
     /// @return valid True if address passes basic validation
     function isValidTestAddress(address addr) internal pure returns (bool valid) {
-        return addr != address(0) && 
-               addr != address(0xdead) &&
-               addr != address(0xDeaDDeaDDEaDdeaDdEAddEADDEAdDeadDEADDEaD) &&
-               uint160(addr) > 0xFF; // Avoid precompiles
+        return
+            addr != address(0) &&
+            addr != address(0xdead) &&
+            addr != address(0xDeaDDeaDDEaDdeaDdEAddEADDEAdDeadDEADDEaD) &&
+            uint160(addr) > 0xFF; // Avoid precompiles
     }
 
     /// @notice Validate amount is reasonable for testing
@@ -102,9 +106,9 @@ library DiamondForgeHelpers {
     function assertSelectorExists(address diamond, bytes4 selector) internal view {
         bytes memory callData = abi.encodeWithSignature("facetAddress(bytes4)", selector);
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "facetAddress() call failed");
-        
+
         address facetAddress = abi.decode(returnData, (address));
         require(facetAddress != address(0), "Selector not found in Diamond");
     }
@@ -121,9 +125,9 @@ library DiamondForgeHelpers {
     ) internal view {
         bytes memory callData = abi.encodeWithSignature("facetAddress(bytes4)", selector);
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "facetAddress() call failed");
-        
+
         address actualFacet = abi.decode(returnData, (address));
         require(actualFacet == expectedFacet, "Selector routes to unexpected facet");
     }
@@ -139,7 +143,7 @@ library DiamondForgeHelpers {
     ) internal view returns (address facetAddress) {
         bytes memory callData = abi.encodeWithSignature("facetAddress(bytes4)", selector);
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "facetAddress() call failed");
         facetAddress = abi.decode(returnData, (address));
     }
@@ -151,19 +155,21 @@ library DiamondForgeHelpers {
     function getAllFacets(address diamond) internal view returns (bytes memory facets) {
         bytes memory callData = abi.encodeWithSignature("facets()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "facets() call failed");
         return returnData;
     }
 
     /// @notice Get facet addresses
     /// @dev Calls DiamondLoupe facetAddresses()
-    /// @param diamond The Diamond contract address  
+    /// @param diamond The Diamond contract address
     /// @return facetAddresses Array of all facet addresses
-    function getFacetAddresses(address diamond) internal view returns (address[] memory facetAddresses) {
+    function getFacetAddresses(
+        address diamond
+    ) internal view returns (address[] memory facetAddresses) {
         bytes memory callData = abi.encodeWithSignature("facetAddresses()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "facetAddresses() call failed");
         facetAddresses = abi.decode(returnData, (address[]));
     }
@@ -179,7 +185,7 @@ library DiamondForgeHelpers {
     ) internal view returns (bytes4[] memory selectors) {
         bytes memory callData = abi.encodeWithSignature("facetFunctionSelectors(address)", facet);
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "facetFunctionSelectors() call failed");
         selectors = abi.decode(returnData, (bytes4[]));
     }
@@ -191,9 +197,9 @@ library DiamondForgeHelpers {
     function assertDiamondOwner(address diamond, address expectedOwner) internal view {
         bytes memory callData = abi.encodeWithSignature("owner()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "owner() call failed");
-        
+
         address actualOwner = abi.decode(returnData, (address));
         require(actualOwner == expectedOwner, "Diamond owner does not match expected");
     }
@@ -205,7 +211,7 @@ library DiamondForgeHelpers {
     function getDiamondOwner(address diamond) internal view returns (address owner) {
         bytes memory callData = abi.encodeWithSignature("owner()");
         (bool success, bytes memory returnData) = diamond.staticcall(callData);
-        
+
         require(success, "owner() call failed");
         owner = abi.decode(returnData, (address));
     }
@@ -218,16 +224,16 @@ library DiamondForgeHelpers {
         bytes memory buffer = new bytes(10);
         buffer[0] = "0";
         buffer[1] = "x";
-        
+
         bytes memory hexChars = "0123456789abcdef";
         bytes memory selectorBytes = abi.encodePacked(selector);
-        
+
         for (uint256 i = 0; i < 4; i++) {
             uint8 value = uint8(selectorBytes[i]);
             buffer[2 + i * 2] = hexChars[value >> 4];
             buffer[3 + i * 2] = hexChars[value & 0x0f];
         }
-        
+
         return string(buffer);
     }
 
@@ -238,13 +244,13 @@ library DiamondForgeHelpers {
     function boundAddress(uint256 seed) internal pure returns (address addr) {
         // Create address from seed, ensuring it's valid
         addr = address(uint160(seed));
-        
+
         // Re-hash if address is invalid
         while (!isValidTestAddress(addr)) {
             seed = uint256(keccak256(abi.encodePacked(seed)));
             addr = address(uint160(seed));
         }
-        
+
         return addr;
     }
 
@@ -261,7 +267,7 @@ library DiamondForgeHelpers {
     ) internal pure returns (uint256 amount) {
         require(max >= min, "max must be >= min");
         require(max < type(uint128).max, "max must be < uint128 max");
-        
+
         amount = min + (seed % (max - min + 1));
         return amount;
     }
@@ -280,11 +286,14 @@ library DiamondForgeHelpers {
     /// @param a First array
     /// @param b Second array
     /// @return equal True if arrays contain same selectors (order doesn't matter)
-    function selectorsEqual(bytes4[] memory a, bytes4[] memory b) internal pure returns (bool equal) {
+    function selectorsEqual(
+        bytes4[] memory a,
+        bytes4[] memory b
+    ) internal pure returns (bool equal) {
         if (a.length != b.length) {
             return false;
         }
-        
+
         // Simple O(n²) comparison for small arrays (typical in Diamond tests)
         for (uint256 i = 0; i < a.length; i++) {
             bool found = false;
@@ -298,7 +307,7 @@ library DiamondForgeHelpers {
                 return false;
             }
         }
-        
+
         return true;
     }
 }

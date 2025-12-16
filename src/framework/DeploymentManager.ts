@@ -3,8 +3,10 @@ import {
   LocalDiamondDeployer,
   LocalDiamondDeployerConfig,
 } from "@diamondslab/hardhat-diamonds";
+import "@diamondslab/hardhat-diamonds/dist/type-extensions";
+import "@nomicfoundation/hardhat-ethers";
 import { existsSync } from "fs";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
+import type { HardhatRuntimeEnvironment } from "hardhat/types";
 import { join } from "path";
 import { Logger } from "../utils/logger";
 
@@ -61,7 +63,7 @@ export class DeploymentManager {
     Logger.step("Initializing LocalDiamondDeployer...");
     
     try {
-      const deployer = await LocalDiamondDeployer.getInstance(this.hre, {
+      const deployer = await LocalDiamondDeployer.getInstance(this.hre as any, {
         diamondName,
         networkName,
         provider,
@@ -110,7 +112,7 @@ export class DeploymentManager {
         return null;
       }
 
-      const deployer = await LocalDiamondDeployer.getInstance(this.hre, {
+      const deployer = await LocalDiamondDeployer.getInstance(this.hre as any, {
         diamondName,
         networkName,
         provider,

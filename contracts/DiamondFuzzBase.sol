@@ -9,7 +9,7 @@ import "./DiamondABILoader.sol";
 /// @notice Abstract base contract for Diamond fuzzing and integration tests
 /// @dev Inherit from this contract to create Diamond-based tests with built-in helpers for calling functions, measuring gas, and verifying routing
 /// @custom:security This contract is intended for testing purposes only
-/// @custom:usage 
+/// @custom:usage
 /// ```solidity
 /// contract MyDiamondTest is DiamondFuzzBase {
 ///     function setUp() public override {
@@ -71,7 +71,9 @@ abstract contract DiamondFuzzBase is Test {
             return addr;
         } catch {
             // Fall back to expecting a deployment file or generated library
-            revert("DiamondFuzzBase: Override _loadDiamondAddress() or set DIAMOND_ADDRESS env var");
+            revert(
+                "DiamondFuzzBase: Override _loadDiamondAddress() or set DIAMOND_ADDRESS env var"
+            );
         }
     }
 

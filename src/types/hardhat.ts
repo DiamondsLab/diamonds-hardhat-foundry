@@ -2,6 +2,7 @@
  * Type extensions for Hardhat Runtime Environment
  */
 
+import "@nomicfoundation/hardhat-ethers";
 import "hardhat/types/config";
 import "hardhat/types/runtime";
 import { DiamondsFoundryConfig } from "../types/config";
@@ -19,6 +20,5 @@ declare module "hardhat/types/config" {
 declare module "hardhat/types/runtime" {
   export interface HardhatRuntimeEnvironment {
     diamondsFoundry: Required<DiamondsFoundryConfig>;
-    ethers: any; // Will be provided by @nomicfoundation/hardhat-ethers
   }
 }
