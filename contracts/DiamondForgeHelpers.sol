@@ -8,19 +8,6 @@ import "forge-std/Test.sol";
 /// @notice Utility library for Diamond testing with Forge
 /// @dev Provides assertion helpers, address validation, and common test utilities for Diamond contracts
 /// @custom:security This library is intended for testing purposes only
-/// @custom:example
-/// ```solidity
-/// import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
-///
-/// contract MyTest is Test {
-///     using DiamondForgeHelpers for address;
-///
-///     function testDiamond() public {
-///         address diamond = deployDiamond();
-///         DiamondForgeHelpers.assertValidDiamond(diamond);
-///     }
-/// }
-/// ```
 library DiamondForgeHelpers {
     /// @notice Error for invalid Diamond address
     /// @param diamondAddress The invalid address
@@ -86,8 +73,7 @@ library DiamondForgeHelpers {
     function isValidTestAddress(address addr) internal pure returns (bool valid) {
         return
             addr != address(0) &&
-            addr != address(0xdead) &&
-            addr != address(0xDeaDDeaDDEaDdeaDdEAddEADDEAdDeadDEADDEaD) &&
+            addr != address(0x000000000000000000000000000000000000dEaD) &&
             uint160(addr) > 0xFF; // Avoid precompiles
     }
 
@@ -219,8 +205,8 @@ library DiamondForgeHelpers {
     /// @notice Format bytes4 selector as hex string
     /// @dev Utility for logging and debugging
     /// @param selector The bytes4 selector
-    /// @return hex The hex string representation
-    function toHexString(bytes4 selector) internal pure returns (string memory hex) {
+    /// @return hexString The hex string representation
+    function toHexString(bytes4 selector) internal pure returns (string memory hexString) {
         bytes memory buffer = new bytes(10);
         buffer[0] = "0";
         buffer[1] = "x";
