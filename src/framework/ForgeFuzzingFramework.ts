@@ -131,11 +131,26 @@ export class ForgeFuzzingFramework {
 
       // Step 5: Run tests
       Logger.section("Step 4/4: Running Forge Tests");
+      
+      // Only fork when using persistent networks (localhost, sepolia, mainnet, etc.)
+      // The ephemeral "hardhat" network cannot be forked from
+      let forkUrl: string | undefined;
+      if (networkName !== "hardhat") {
+        const provider = this.hre.ethers.provider;
+        forkUrl = (provider as any)._hardhatProvider?._wrapped?.url || "http://127.0.0.1:8545";
+        Logger.info(`Forking from ${networkName}: ${forkUrl}`);
+      } else {
+        Logger.warn(`⚠️  Using ephemeral "${networkName}" network - tests requiring deployed Diamond will fail`);
+        Logger.warn(`💡 For deployed Diamond testing, use: npx hardhat diamonds-forge:test --network localhost`);
+        Logger.warn(`💡 Make sure to start Hardhat node first: npx hardhat node`);
+      }
+      
       const testResult = await runForgeTest({
         matchTest,
         matchContract,
         verbosity,
         gasReport,
+        forkUrl, // Only set for persistent networks
         cwd: this.hre.config.paths.root,
       });
 

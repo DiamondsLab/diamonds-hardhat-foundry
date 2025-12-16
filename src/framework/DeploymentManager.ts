@@ -47,7 +47,7 @@ export class DeploymentManager {
           networkName,
           provider,
           chainId,
-          writeDeployedDiamondData: true,
+          writeDeployedDiamondData: false, // Don't write during testing
         } as LocalDiamondDeployerConfig);
         
         return await deployer.getDiamond();
@@ -67,7 +67,7 @@ export class DeploymentManager {
         networkName,
         provider,
         chainId,
-        writeDeployedDiamondData: true,
+        writeDeployedDiamondData: false, // Don't write during testing
       } as LocalDiamondDeployerConfig);
 
       await deployer.setVerbose(false); // Reduce noise, use our logger instead

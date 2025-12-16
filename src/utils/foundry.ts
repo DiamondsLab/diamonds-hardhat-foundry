@@ -89,6 +89,7 @@ export async function runForgeTest(options: {
   matchContract?: string;
   verbosity?: number;
   gasReport?: boolean;
+  forkUrl?: string;
   cwd?: string;
   env?: Record<string, string>;
 }): Promise<{ success: boolean; output: string }> {
@@ -108,6 +109,10 @@ export async function runForgeTest(options: {
 
   if (options.gasReport) {
     args.push("--gas-report");
+  }
+
+  if (options.forkUrl) {
+    args.push("--fork-url", options.forkUrl);
   }
 
   try {

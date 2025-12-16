@@ -132,3 +132,107 @@ function buildForgeExecutionError(
       );
   }
 }
+
+/**
+ * Check if Foundry is installed
+ */
+export function isFoundryInstalled(): boolean {
+  try {
+    execSync("forge --version", { stdio: "pipe" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Compile Forge contracts
+ */
+export async function compileForge(options: {
+  cwd?: string;
+  verbose?: boolean;
+}): Promise<{ success: boolean; output?: string }> {
+  const { cwd = process.cwd(), verbose = false } = options;
+  
+  try {
+    const args = ["build"];
+    if (!verbose) {
+      args.push("--quiet");
+    }
+    
+    const { stdout, stderr } = await exec(`forge ${args.join(" ")}`, { cwd });
+    return { success: true, output: stdout || stderr };
+  } catch (error: any) {
+    console.error("Forge build failed:", error.message);
+    return { success: false, output: error.message };
+  }
+}
+
+/**
+ * Run Forge tests with optional forking
+ */
+export async function runForgeTest(options: {
+  matchTest?: string;
+  matchContract?: string;
+  verbosity?: number;
+  gasReport?: boolean;
+  forkUrl?: string;
+  cwd?: string;
+}): Promise<{ success: boolean; output?: string }> {
+  const {
+    matchTest,
+    matchContract,
+    verbosity = 2,
+    gasReport = false,
+    forkUrl,
+    cwd = process.cwd(),
+  } = options;
+
+  try {
+    const args = ["test"];
+
+    // Add verbosity
+    if (verbosity > 0 && verbosity <= 5) {
+      args.push(`-${"v".repeat(verbosity)}`);
+    }
+
+    // Add test filters
+    if (matchTest) {
+      args.push("--match-test", matchTest);
+    }
+
+    if (matchContract) {
+      args.push("--match-contract", matchContract);
+    }
+
+    // Add gas reporting
+    if (gasReport) {
+      args.push("--gas-report");
+    }
+
+    // CRITICAL: Add fork URL to connect to deployed Diamond
+    // This allows Forge tests to access the Hardhat-deployed Diamond contract
+    if (forkUrl) {
+      args.push("--fork-url", forkUrl);
+    }
+
+    const cmd = `forge ${args.join(" ")}`;
+    console.log(`\nRunning: ${picocolors.blue(cmd)}\n`);
+
+    const { stdout, stderr } = await exec(cmd, { cwd, maxBuffer: 10 * 1024 * 1024 });
+    console.log(stdout);
+    if (stderr) console.error(stderr);
+
+    return { success: true, output: stdout };
+  } catch (error: any) {
+    // Forge returns non-zero exit code when tests fail
+    // We still want to show the output
+    if (error.stdout) console.log(error.stdout);
+    if (error.stderr) console.error(error.stderr);
+
+    return {
+      success: false,
+      output: error.stdout || error.stderr || error.message,
+    };
+  }
+}
