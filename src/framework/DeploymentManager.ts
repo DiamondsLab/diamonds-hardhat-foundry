@@ -16,6 +16,9 @@ import { Logger } from "../utils/logger";
  * for portable, dependency-managed Diamond deployments.
  */
 export class DeploymentManager {
+  // In-memory cache for ephemeral deployments (when writeDeployedDiamondData: false)
+  private deploymentCache: Map<string, Diamond> = new Map();
+
   constructor(private hre: HardhatRuntimeEnvironment) {}
 
   /**
@@ -23,11 +26,13 @@ export class DeploymentManager {
    * @param diamondName - Name of the Diamond to deploy
    * @param networkName - Target network (hardhat, localhost, anvil)
    * @param force - Force redeployment even if exists
+   * @param writeDeployedDiamondData - Whether to write deployment record to file
    */
   async deploy(
     diamondName: string = "ExampleDiamond",
     networkName: string = "hardhat",
-    force: boolean = false
+    force: boolean = false,
+    writeDeployedDiamondData: boolean = false
   ): Promise<Diamond> {
     Logger.section(`Deploying ${diamondName} to ${networkName}`);
 
@@ -47,7 +52,7 @@ export class DeploymentManager {
           networkName,
           provider,
           chainId,
-          writeDeployedDiamondData: false, // Don't write during testing
+          writeDeployedDiamondData,
         } as LocalDiamondDeployerConfig);
         
         return await deployer.getDiamond();
@@ -67,7 +72,7 @@ export class DeploymentManager {
         networkName,
         provider,
         chainId,
-        writeDeployedDiamondData: false, // Don't write during testing
+        writeDeployedDiamondData,
       } as LocalDiamondDeployerConfig);
 
       await deployer.setVerbose(false); // Reduce noise, use our logger instead
@@ -80,6 +85,13 @@ export class DeploymentManager {
       Logger.success(`Diamond deployed at: ${deployedData.DiamondAddress}`);
       Logger.info(`Deployer: ${deployedData.DeployerAddress}`);
       Logger.info(`Facets deployed: ${Object.keys(deployedData.DeployedFacets || {}).length}`);
+
+      // Cache deployment if not writing to file
+      if (!writeDeployedDiamondData) {
+        const cacheKey = `${diamondName}-${networkName}-${chainId}`;
+        this.deploymentCache.set(cacheKey, diamond);
+        Logger.info("Deployment cached in memory (not persisted to file)");
+      }
 
       return diamond;
     } catch (error) {
@@ -106,6 +118,13 @@ export class DeploymentManager {
       const network = await provider.getNetwork();
       const actualChainId = chainId ?? Number(network.chainId);
 
+      // Check in-memory cache first (for ephemeral deployments)
+      const cacheKey = `${diamondName}-${networkName}-${actualChainId}`;
+      if (this.deploymentCache.has(cacheKey)) {
+        Logger.info("Using cached deployment (ephemeral)");
+        return this.deploymentCache.get(cacheKey)!;
+      }
+
       if (!this.hasDeploymentRecord(diamondName, networkName, actualChainId)) {
         Logger.warn("No deployment record found");
         return null;
@@ -131,11 +150,13 @@ export class DeploymentManager {
    * @param diamondName - Name of the Diamond
    * @param networkName - Network name
    * @param force - Force redeployment
+   * @param writeDeployedDiamondData - Whether to write deployment record to file
    */
   async ensureDeployment(
     diamondName: string = "ExampleDiamond",
     networkName: string = "hardhat",
-    force: boolean = false
+    force: boolean = false,
+    writeDeployedDiamondData: boolean = false
   ): Promise<Diamond> {
     const provider = this.hre.ethers.provider;
     const network = await provider.getNetwork();
@@ -150,7 +171,7 @@ export class DeploymentManager {
     }
 
     // Deploy if not exists or force is true
-    return await this.deploy(diamondName, networkName, force);
+    return await this.deploy(diamondName, networkName, force, writeDeployedDiamondData);
   }
 
   /**

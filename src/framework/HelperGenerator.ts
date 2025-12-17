@@ -184,6 +184,11 @@ export class HelperGenerator {
     source += `    /// @dev This is the main Diamond proxy address\n`;
     source += `    address constant DIAMOND_ADDRESS = ${deploymentData.DiamondAddress};\n\n`;
 
+    // Deployer address
+    source += `    /// @notice Address of the deployer account\n`;
+    source += `    /// @dev Account that deployed the Diamond\n`;
+    source += `    address constant DEPLOYER_ADDRESS = ${deploymentData.DeployerAddress};\n\n`;
+
     // Facet addresses
     source += "    // ========================================\n";
     source += "    // Facet Addresses\n";
@@ -213,6 +218,14 @@ export class HelperGenerator {
     source += "     */\n";
     source += "    function getDiamondAddress() internal pure returns (address) {\n";
     source += "        return DIAMOND_ADDRESS;\n";
+    source += "    }\n\n";
+
+    source += "    /**\n";
+    source += "     * @notice Get the deployer address\n";
+    source += "     * @return The address of the deployer account\n";
+    source += "     */\n";
+    source += "    function getDeployerAddress() internal pure returns (address) {\n";
+    source += "        return DEPLOYER_ADDRESS;\n";
     source += "    }\n\n";
 
     source += "    /**\n";

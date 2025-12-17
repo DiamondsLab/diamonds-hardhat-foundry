@@ -82,7 +82,8 @@ export class ForgeFuzzingFramework {
         await this.deploymentManager.ensureDeployment(
           diamondName,
           networkName,
-          force
+          force,
+          false // Don't write deployment data for tests by default
         );
       } else {
         Logger.info("Skipping deployment (using existing)");
