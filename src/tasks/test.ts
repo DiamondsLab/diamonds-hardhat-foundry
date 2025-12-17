@@ -42,6 +42,8 @@ task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
   .addFlag("skipDeployment", "Skip Diamond deployment step")
   .addFlag("skipHelpers", "Skip helper generation step")
   .addFlag("force", "Force redeployment of Diamond")
+  .addFlag("saveDeployment", "Write deployment data to file for reuse")
+  .addFlag("useSnapshot", "Use EVM snapshots for test isolation")
   .setAction(async (taskArgs, hre: HardhatRuntimeEnvironment) => {
     Logger.section("Running Forge Tests with Diamond");
 
@@ -55,6 +57,8 @@ task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
     const skipDeployment = taskArgs.skipDeployment;
     const skipHelpers = taskArgs.skipHelpers;
     const force = taskArgs.force;
+    const saveDeployment = taskArgs.saveDeployment;
+    const useSnapshot = taskArgs.useSnapshot;
 
     Logger.info(`Diamond: ${diamondName}`);
     Logger.info(`Network: ${networkName}`);
@@ -64,6 +68,8 @@ task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
     if (gasReport) Logger.info("Gas Report: enabled");
     if (skipDeployment) Logger.info("Skip Deployment: true");
     if (skipHelpers) Logger.info("Skip Helpers: true");
+    if (saveDeployment) Logger.info("Save Deployment: true");
+    if (useSnapshot) Logger.info("Use Snapshot: true");
 
     // Lazy-load framework to avoid circular dependency during config loading
     const { ForgeFuzzingFramework } = await import("../framework/ForgeFuzzingFramework.js");
@@ -80,6 +86,8 @@ task("diamonds-forge:test", "Run Forge tests with Diamond deployment")
       gasReport,
       skipHelpers,
       skipDeployment,
+      writeDeployedDiamondData: saveDeployment,
+      useSnapshot,
     };
 
     // Run tests using the framework

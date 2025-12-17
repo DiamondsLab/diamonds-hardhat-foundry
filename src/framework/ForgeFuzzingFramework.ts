@@ -23,6 +23,10 @@ export interface ForgeTestOptions {
   skipHelpers?: boolean;
   /** Skip deployment (use existing) */
   skipDeployment?: boolean;
+  /** Write deployment data to file (default: false for ephemeral) */
+  writeDeployedDiamondData?: boolean;
+  /** Use EVM snapshots for test isolation */
+  useSnapshot?: boolean;
 }
 
 /**
@@ -58,6 +62,8 @@ export class ForgeFuzzingFramework {
     const {
       diamondName = "ExampleDiamond",
       networkName = "hardhat",
+      writeDeployedDiamondData = false,
+      useSnapshot = false,
       force = false,
       matchTest,
       matchContract,
@@ -83,7 +89,7 @@ export class ForgeFuzzingFramework {
           diamondName,
           networkName,
           force,
-          false // Don't write deployment data for tests by default
+          writeDeployedDiamondData
         );
       } else {
         Logger.info("Skipping deployment (using existing)");
