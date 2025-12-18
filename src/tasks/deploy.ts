@@ -23,6 +23,7 @@ task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
   )
   .addFlag("reuse", "Reuse existing deployment if available")
   .addFlag("force", "Force redeployment even if deployment exists")
+  .addFlag("saveDeployment", "Write deployment data to file (default: true for localhost/testnet)")
   .setAction(async (taskArgs, hre: HardhatRuntimeEnvironment) => {
     Logger.section("Deploying Diamond for Forge Testing");
 
@@ -31,6 +32,11 @@ task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
     const diamondName = taskArgs.diamondName;
     const reuse = taskArgs.reuse;
     const force = taskArgs.force;
+    
+    // Default to saving deployment for persistent networks (localhost, sepolia, etc.)
+    // but not for ephemeral hardhat network. 
+    // Flags default to false when not provided, so we check if explicitly passed
+    const saveDeployment = taskArgs.saveDeployment || networkName !== "hardhat";
 
     // Validate flags
     if (reuse && force) {
@@ -41,6 +47,7 @@ task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
     Logger.info(`Diamond: ${diamondName}`);
     Logger.info(`Network: ${networkName}`);
     Logger.info(`Mode: ${force ? "force deploy" : reuse ? "reuse if exists" : "deploy new"}`);
+    Logger.info(`Save Deployment: ${saveDeployment}`);
 
     // Step 1: Validate Foundry (optional for deployment, but recommended)
     Logger.step("Checking Foundry installation...");
@@ -68,14 +75,16 @@ task("diamonds-forge:deploy", "Deploy Diamond contract for Forge testing")
         diamond = await deploymentManager.ensureDeployment(
           diamondName,
           networkName,
-          false
+          false,
+          saveDeployment
         );
       } else {
         // Deploy (force if flag is set)
         diamond = await deploymentManager.deploy(
           diamondName,
           networkName,
-          force
+          force,
+          saveDeployment
         );
       }
 
