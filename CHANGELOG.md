@@ -5,6 +5,82 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Dynamic Helper Generation**: DiamondDeployment.sol now generated dynamically from deployment records
+  - No more hardcoded addresses in test helpers
+  - Automatic regeneration on each deployment
+  - Network-specific helpers for multi-network testing
+  - Helper library pattern for clean imports
+- **Deployment Management Improvements**:
+  - Ephemeral deployment mode (default) - deploy in-memory without persisting records
+  - Persistent deployment mode - save deployment records for reuse
+  - `--save-deployment` flag to persist deployment records
+  - `--use-deployment` flag to load existing deployments
+  - `--force-deploy` flag to force redeployment
+  - Smart deployment detection and reuse
+- **Enhanced Test Task Flags**:
+  - `--match-test <pattern>` - Filter tests by name pattern
+  - `--match-contract <contract>` - Filter tests by contract name
+  - `--match-path <path>` - Filter tests by file path
+  - `--verbosity <1-5>` - Control Forge output verbosity
+  - `--gas-report` - Display gas usage reports
+  - `--coverage` - Generate coverage reports
+  - `--skip-helpers` - Skip helper generation step
+  - `--helpers-dir <path>` - Custom helpers output directory
+- **Snapshot/Restore Support**:
+  - `DiamondForgeHelpers.snapshotState()` - Take blockchain state snapshot
+  - `DiamondForgeHelpers.revertToSnapshot()` - Restore to saved snapshot
+  - Uses Foundry's `vm.snapshotState()` and `vm.revertToState()` (no deprecation warnings)
+  - Comprehensive snapshot examples in `SnapshotExample.t.sol`
+  - Full documentation in TESTING.md
+- **Integration Tests**:
+  - 40+ integration tests covering all framework functionality
+  - DeploymentIntegrationTest - validates deployment management
+  - HelperGenerationTest - validates dynamic helper generation
+  - EndToEndTest - validates complete workflows
+  - DiamondABILoaderTest - validates ABI parsing
+  - ExampleIntegrationTest - demonstrates multi-facet interactions
+  - BasicDiamondIntegration - self-deploying test pattern
+  - BasicDiamondIntegrationDeployed - deployed Diamond pattern with fork-awareness
+  - SnapshotExample - snapshot/restore examples
+  - All tests pass with proper fork-awareness and graceful skipping
+
+### Changed
+
+- Helper generation now creates library-based helpers instead of standalone contracts
+- Test workflows now support both ephemeral and persistent deployment modes
+- `diamonds-forge:test` task now supports comprehensive filtering and control
+- Fork-aware test pattern established for deployed Diamond tests
+- Enhanced error messages with actionable troubleshooting steps
+- Improved CI/CD compatibility with ephemeral deployments
+
+### Documentation
+
+- **README.md**:
+  - Added "Dynamic Helper Generation" section with examples
+  - Added "Deployment Management" section covering ephemeral vs persistent modes
+  - Added "Task Flags Reference" with all available options
+  - Added "Snapshot and Restore" section with usage examples
+  - Expanded "Troubleshooting" section with 10+ common issues and solutions
+  - Added fork-awareness patterns and best practices
+- **TESTING.md**:
+  - Added comprehensive "Snapshot and Restore" section
+  - Added snapshot API reference
+  - Added snapshot use cases and examples
+  - Added snapshot limitations and best practices
+  - Enhanced fork-aware testing documentation
+- All documentation updated with working examples from integration tests
+
+### Fixed
+
+- Helper generation now works reliably with ephemeral deployments
+- Tests properly skip when Diamond not deployed (fork-awareness)
+- Snapshot functions use non-deprecated Foundry APIs
+- All integration tests pass with proper isolation
+
 ## [2.0.0] - 2024-12-16
 
 ### Breaking Changes

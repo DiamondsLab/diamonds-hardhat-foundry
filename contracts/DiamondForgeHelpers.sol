@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
+import "forge-std/Vm.sol";
 
 /// @title DiamondForgeHelpers
 /// @author DiamondsLab
@@ -9,6 +10,9 @@ import "forge-std/Test.sol";
 /// @dev Provides assertion helpers, address validation, and common test utilities for Diamond contracts
 /// @custom:security This library is intended for testing purposes only
 library DiamondForgeHelpers {
+    /// @notice Forge VM interface for cheat codes
+    Vm private constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+
     /// @notice Error for invalid Diamond address
     /// @param diamondAddress The invalid address
     /// @param reason The reason it's invalid
@@ -295,5 +299,22 @@ library DiamondForgeHelpers {
         }
 
         return true;
+    }
+
+    /// @notice Take a snapshot of current blockchain state
+    /// @dev Uses Foundry's vm.snapshotState() to save state
+    /// @dev Only works on networks that support snapshots (Hardhat, Anvil)
+    /// @return snapshotId The snapshot identifier to use for reverting
+    function snapshotState() internal returns (uint256 snapshotId) {
+        snapshotId = vm.snapshotState();
+    }
+
+    /// @notice Revert blockchain state to a previously saved snapshot
+    /// @dev Uses Foundry's vm.revertToState() to restore state
+    /// @dev The snapshot is consumed after reverting
+    /// @param snapshotId The snapshot identifier from snapshotState()
+    /// @return success True if revert was successful
+    function revertToSnapshot(uint256 snapshotId) internal returns (bool success) {
+        success = vm.revertToState(snapshotId);
     }
 }

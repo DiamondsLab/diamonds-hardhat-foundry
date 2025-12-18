@@ -338,6 +338,205 @@ npx hardhat diamonds-forge:test --match-test "testOwnership" --verbosity 4
 npx hardhat diamonds-forge:test --skip-deployment --match-contract "MyTest"
 ```
 
+## Dynamic Helper Generation
+
+Version 2.0.0+ introduces **dynamic helper generation** that creates deployment-specific Solidity helpers without hardcoded addresses.
+
+### How It Works
+
+When you deploy a Diamond and generate helpers, the plugin creates `test/foundry/helpers/DiamondDeployment.sol` with:
+
+```solidity
+library DiamondDeployment {
+    /// @notice Get the deployed Diamond address
+    function getDiamondAddress() internal pure returns (address) {
+        return 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+    }
+
+    /// @notice Get the deployer address
+    function getDeployerAddress() internal pure returns (address) {
+        return 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+    }
+    
+    // Additional deployment-specific data...
+}
+```
+
+**Key Benefits:**
+
+- ✅ **No hardcoded addresses in test files** - All addresses come from deployment records
+- ✅ **Network-specific helpers** - Different helpers for different networks
+- ✅ **Automatic regeneration** - Helpers update when you redeploy
+- ✅ **Type-safe** - Solidity library ensures compile-time validation
+
+### Using Generated Helpers
+
+```solidity
+import "../helpers/DiamondDeployment.sol";
+
+contract MyTest is Test {
+    address diamond;
+    address deployer;
+
+    function setUp() public {
+        // Load from generated helpers
+        diamond = DiamondDeployment.getDiamondAddress();
+        deployer = DiamondDeployment.getDeployerAddress();
+        
+        // Use in tests
+        vm.prank(deployer);
+        IDiamond(diamond).someFunction();
+    }
+}
+```
+
+## Deployment Management
+
+The plugin provides flexible deployment management with two modes:
+
+### Ephemeral Deployments (Default)
+
+For quick testing without persisting deployment records:
+
+```bash
+# Deploy Diamond for this test run only
+npx hardhat diamonds-forge:test --diamond-name MyDiamond
+
+# Deployment is cached in memory but not saved to file
+# Helpers are generated from cached data
+# Next run will deploy fresh Diamond
+```
+
+**Use ephemeral mode when:**
+- Running tests in CI/CD
+- Testing with default Hardhat network
+- You don't need to reuse deployments
+- Each test run should start clean
+
+### Persistent Deployments
+
+Save deployment records for reuse across test runs:
+
+```bash
+# Deploy and save deployment record
+npx hardhat diamonds-forge:deploy --diamond-name MyDiamond --network localhost
+
+# Run tests using saved deployment
+npx hardhat diamonds-forge:test --network localhost --use-deployment
+
+# Deployment is loaded from file
+# Subsequent runs reuse the same Diamond
+```
+
+**Use persistent mode when:**
+- Testing on persistent networks (localhost, testnets)
+- Developing against specific Diamond deployment
+- Testing upgrade scenarios
+- Running integration tests
+
+### Task Flags Reference
+
+**Deployment Control:**
+- `--save-deployment` - Save deployment record to file (persistent mode)
+- `--use-deployment` - Load existing deployment instead of deploying new one
+- `--force-deploy` - Force new deployment even if one exists
+
+**Helper Control:**
+- `--skip-helpers` - Don't generate DiamondDeployment.sol
+- `--helpers-dir <path>` - Custom output directory for helpers
+
+**Test Filtering:**
+- `--match-test <pattern>` - Run only tests matching name pattern
+- `--match-contract <contract>` - Run only tests in specified contract
+- `--match-path <path>` - Run only tests in files matching path
+
+**Output Control:**
+- `--verbosity <1-5>` - Set Forge output verbosity (default: 2)
+- `--gas-report` - Display detailed gas usage report
+- `--coverage` - Generate test coverage report
+
+**Network Control:**
+- `--network <name>` - Network to use (hardhat, localhost, sepolia, etc.)
+- `--fork-url <url>` - Custom RPC URL for forking
+
+### Examples
+
+```bash
+# Quick ephemeral test (default)
+npx hardhat diamonds-forge:test
+
+# Save deployment for reuse
+npx hardhat diamonds-forge:test --save-deployment --network localhost
+
+# Reuse saved deployment
+npx hardhat diamonds-forge:test --use-deployment --network localhost
+
+# Test specific functionality with gas report
+npx hardhat diamonds-forge:test --match-test "testOwnership" --gas-report
+
+# Run only fuzz tests with high verbosity
+npx hardhat diamonds-forge:test --match-contract "Fuzz" --verbosity 4
+
+# Force redeploy even if deployment exists
+npx hardhat diamonds-forge:test --force-deploy --network localhost
+```
+
+## Snapshot and Restore
+
+The `DiamondForgeHelpers` library provides snapshot/restore functionality for advanced testing scenarios.
+
+### Basic Usage
+
+```solidity
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
+
+contract MyTest is Test {
+    using DiamondForgeHelpers for *;
+
+    function test_MultipleScenarios() public {
+        // Save initial state
+        uint256 snapshot = DiamondForgeHelpers.snapshotState();
+        
+        // Test scenario A
+        runScenarioA();
+        
+        // Restore to initial state
+        DiamondForgeHelpers.revertToSnapshot(snapshot);
+        
+        // Test scenario B from same starting point
+        runScenarioB();
+    }
+}
+```
+
+### When to Use Snapshots
+
+**Good Use Cases:**
+- Testing multiple outcomes from same initial state
+- Expensive setup that you want to reuse
+- Testing state transitions and rollbacks
+- Benchmarking gas costs across scenarios
+
+**Don't Use For:**
+- Normal test isolation (Forge does this automatically)
+- Production/testnet testing (snapshots only work locally)
+
+### Snapshot Examples
+
+See comprehensive examples in `test/foundry/integration/SnapshotExample.t.sol`:
+
+```bash
+forge test --match-path "**/SnapshotExample.t.sol" -vv
+```
+
+**Available in examples:**
+- Basic snapshot/restore workflow
+- Multiple snapshots with different states
+- Snapshot with contract state changes  
+- Test isolation patterns
+
+For detailed snapshot documentation, see [TESTING.md](./TESTING.md#snapshot-and-restore).
+
 ## Programmatic API
 
 Use the framework classes directly in your scripts:
@@ -582,7 +781,218 @@ export default {
 
 ## Troubleshooting
 
-### Foundry Not Found
+### Common Issues
+
+#### Foundry Not Found
+
+**Error:** `Foundry not installed` or `forge: command not found`
+
+**Solution:** Install Foundry from [getfoundry.sh](https://getfoundry.sh/):
+
+```bash
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
+```
+
+Verify installation:
+```bash
+forge --version
+```
+
+#### LocalDiamondDeployer Not Found
+
+**Error:** `LocalDiamondDeployer not found` or `Cannot find module`
+
+**Solution:** Ensure you have the `@diamondslab/hardhat-diamonds` package installed:
+
+```bash
+npm install --save-dev @diamondslab/hardhat-diamonds
+```
+
+Import it in your `hardhat.config.ts`:
+
+```typescript
+import "@diamondslab/hardhat-diamonds";
+import "@diamondslab/diamonds-hardhat-foundry";
+```
+
+#### Deployment Record Not Found
+
+**Error:** `No deployment record found for MyDiamond-hardhat-31337.json`
+
+**Solution:** Deploy your Diamond first:
+
+```bash
+npx hardhat diamonds-forge:deploy --diamond-name MyDiamond --network localhost
+```
+
+Or use ephemeral deployment (default) which doesn't require saved records:
+
+```bash
+npx hardhat diamonds-forge:test
+```
+
+#### Diamond Has No Code
+
+**Error:** `DiamondFuzzBase: Diamond has no code` when running tests
+
+**Cause:** Test is trying to use a Diamond address that doesn't have deployed code.
+
+**Solutions:**
+
+1. **For tests using hardhat network (ephemeral):**
+   - Tests should deploy their own Diamond in `setUp()`
+   - See `BasicDiamondIntegration.t.sol` for self-deploying pattern
+
+2. **For tests using deployed Diamond:**
+   - Start Hardhat node: `npx hardhat node`
+   - Deploy Diamond: `npx hardhat diamonds-forge:deploy --network localhost`
+   - Run tests: `npx hardhat diamonds-forge:test --network localhost`
+
+3. **Make tests fork-aware:**
+```solidity
+function setUp() public {
+    diamond = DiamondDeployment.getDiamondAddress();
+    
+    // Check if Diamond is deployed (forking)
+    if (diamond.code.length == 0) {
+        // Skip test or deploy in test
+        return;
+    }
+    
+    // Proceed with test setup
+}
+```
+
+#### Generated Helpers Not Compiling
+
+**Error:** Compilation errors in `test/foundry/helpers/DiamondDeployment.sol`
+
+**Solutions:**
+
+1. Ensure Foundry remappings are correct in `foundry.toml`:
+```toml
+[profile.default]
+src = "contracts"
+test = "test/foundry"
+remappings = [
+    "@diamondslab/diamonds-hardhat-foundry/=node_modules/@diamondslab/diamonds-hardhat-foundry/",
+]
+```
+
+2. Verify Diamond deployed successfully before generating helpers:
+```bash
+npx hardhat diamonds-forge:deploy --diamond-name MyDiamond
+npx hardhat diamonds-forge:generate-helpers --diamond-name MyDiamond
+```
+
+3. Check that deployment data is valid:
+   - Look in `diamonds/MyDiamond/deployments/`
+   - Verify JSON file contains `DiamondAddress` field
+
+#### Peer Dependency Warnings
+
+**Warning:** `ERESOLVE unable to resolve dependency tree` or peer dependency conflicts
+
+**Solution:** Install all required peer dependencies:
+
+```bash
+npm install --save-dev \
+  @diamondslab/diamonds \
+  @diamondslab/hardhat-diamonds \
+  @nomicfoundation/hardhat-ethers \
+  ethers \
+  hardhat
+```
+
+For package.json, specify compatible versions:
+
+```json
+{
+  "devDependencies": {
+    "@diamondslab/diamonds": "^3.0.0",
+    "@diamondslab/hardhat-diamonds": "^2.0.0",
+    "@diamondslab/diamonds-hardhat-foundry": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "ethers": "^6.0.0",
+    "hardhat": "^2.26.0"
+  }
+}
+```
+
+#### Tests Pass Locally But Fail in CI
+
+**Cause:** CI environment differences (network, timing, dependencies)
+
+**Solutions:**
+
+1. **Ensure Foundry is installed in CI:**
+```yaml
+# GitHub Actions example
+- name: Install Foundry
+  uses: foundry-rs/foundry-toolchain@v1
+
+- name: Run tests
+  run: npx hardhat diamonds-forge:test
+```
+
+2. **Use ephemeral deployments for CI (default):**
+```bash
+# This works in CI without persistent network
+npx hardhat diamonds-forge:test
+```
+
+3. **For persistent network testing in CI:**
+```yaml
+- name: Start Hardhat node
+  run: npx hardhat node &
+  
+- name: Wait for node
+  run: sleep 5
+  
+- name: Run tests
+  run: npx hardhat diamonds-forge:test --network localhost
+```
+
+#### Import Resolution Errors
+
+**Error:** `File import callback not supported` or module resolution failures
+
+**Solution:** Check your `hardhat.config.ts` has correct imports:
+
+```typescript
+import "@nomicfoundation/hardhat-ethers";
+import "@diamondslab/hardhat-diamonds";
+import "@diamondslab/diamonds-hardhat-foundry";
+
+export default {
+  solidity: "0.8.28",
+  // ... config
+};
+```
+
+Ensure TypeScript compilation targets CommonJS:
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node"
+  }
+}
+```
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. Check the [TESTING.md](./TESTING.md) guide for detailed testing workflows
+2. Review [MIGRATION.md](./MIGRATION.md) if upgrading from v1.x
+3. See [DESIGN.md](./DESIGN.md) for architecture details
+4. Open an issue on [GitHub](https://github.com/diamondslab/diamonds-hardhat-foundry/issues)
+
+## Foundry Not Found
 
 **Error:** `Foundry not installed`
 

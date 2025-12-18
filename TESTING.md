@@ -211,3 +211,122 @@ Then run with `--network localhost`.
 - **Test.sol**: Works everywhere, deploys its own contracts
 
 Choose the right approach based on your testing needs!
+
+## Snapshot and Restore
+
+The `DiamondForgeHelpers` library provides snapshot/restore functionality to save and revert blockchain state during tests. This is useful for testing multiple scenarios without redeploying contracts.
+
+### Using Snapshots
+
+```solidity
+import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
+
+contract MyTest is Test {
+    using DiamondForgeHelpers for *;
+    
+    function test_WithSnapshot() public {
+        // Take a snapshot of current state
+        uint256 snapshot = DiamondForgeHelpers.snapshotState();
+        
+        // Make state changes
+        vm.prank(user);
+        diamond.call(abi.encodeWithSelector(selector, args));
+        
+        // Revert to original state
+        bool success = DiamondForgeHelpers.revertToSnapshot(snapshot);
+        require(success, "Snapshot restore failed");
+        
+        // State is now back to snapshot point
+    }
+}
+```
+
+### Snapshot Features
+
+**Key Points:**
+- Snapshots save complete blockchain state (balances, storage, etc.)
+- Only works on networks that support snapshots (Hardhat, Anvil, Localhost)
+- Snapshots are consumed when used (can't revert to same snapshot twice)
+- Forge automatically snapshots before each test and restores after
+
+**Example Use Cases:**
+
+1. **Testing Multiple Scenarios**
+```solidity
+function test_MultipleOutcomes() public {
+    uint256 snapshot = DiamondForgeHelpers.snapshotState();
+    
+    // Test outcome A
+    testScenarioA();
+    
+    // Restore to test outcome B
+    DiamondForgeHelpers.revertToSnapshot(snapshot);
+    snapshot = DiamondForgeHelpers.snapshotState();  // Take new snapshot
+    testScenarioB();
+}
+```
+
+2. **Isolating Expensive Setup**
+```solidity
+uint256 setupSnapshot;
+
+function setUp() public {
+    // Expensive deployment
+    deployComplexDiamond();
+    
+    // Save snapshot after setup
+    setupSnapshot = DiamondForgeHelpers.snapshotState();
+}
+
+function test_Scenario1() public {
+    // Test uses deployed state
+    // Forge auto-restores after test
+}
+
+function test_Scenario2() public {
+    // Also starts with deployed state
+    // Each test is isolated
+}
+```
+
+### Example Test
+
+See `test/foundry/integration/SnapshotExample.t.sol` for comprehensive examples:
+
+- Basic snapshot/restore
+- Multiple snapshots
+- Snapshot with contract state
+- Test isolation patterns
+
+```bash
+# Run snapshot examples
+forge test --match-path "**/SnapshotExample.t.sol" -vv
+```
+
+### Snapshot API
+
+**`DiamondForgeHelpers.snapshotState()`**
+- Takes a snapshot of current blockchain state
+- Returns: `uint256 snapshotId` - Identifier to use for reverting
+- Does not pause execution
+
+**`DiamondForgeHelpers.revertToSnapshot(uint256 snapshotId)`**
+- Reverts blockchain to previously saved snapshot
+- Params: `snapshotId` - The snapshot identifier
+- Returns: `bool success` - True if revert succeeded
+- Consumes the snapshot (can't be used again)
+
+### Limitations
+
+- Snapshots only work on local networks (Hardhat, Anvil)
+- Cannot snapshot on remote networks (Sepolia, Mainnet)
+- Reverting to a snapshot invalidates later snapshots
+- Forge's automatic test isolation handles most use cases already
+
+**When to Use Snapshots:**
+- ✅ Testing multiple outcomes from same starting state
+- ✅ Expensive setup that you want to reuse
+- ✅ Testing state transitions and rollbacks
+- ❌ Normal test isolation (Forge does this automatically)
+- ❌ Production/testnet testing (not supported)
+
