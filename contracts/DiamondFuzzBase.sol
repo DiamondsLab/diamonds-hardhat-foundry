@@ -311,11 +311,11 @@ abstract contract DiamondFuzzBase is Test {
     /// ```solidity
     /// function setUp() public override {
     ///     super.setUp(); // Load Diamond and ABI
-    ///     
+    ///
     ///     // Grant DEFAULT_ADMIN_ROLE to test contract for access control tests
     ///     vm.prank(_getDiamondOwner());
     ///     _grantRoleToSelf(DEFAULT_ADMIN_ROLE);
-    ///     
+    ///
     ///     // Additional custom setup
     /// }
     /// ```
