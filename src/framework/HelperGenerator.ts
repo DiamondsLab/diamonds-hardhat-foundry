@@ -1,4 +1,4 @@
-import { DeployedDiamondData } from "@diamondslab/diamonds";
+import { DeployedDiamondData, Diamond } from "@diamondslab/diamonds";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { join } from "path";
@@ -79,12 +79,16 @@ export class HelperGenerator {
    * @private
    */
   private setForgeEnvironmentVariables(
-    diamond: any,
+    diamond: Diamond,
     deploymentData: DeployedDiamondData
   ): void {
     try {
-      // Get Diamond ABI path
-      const abiPath = diamond.getDiamondAbiFilePath?.() || `./diamond-abi/${deploymentData.DiamondAddress}.json`;
+      // Get Diamond ABI path - remove leading "./" for Foundry compatibility
+      let abiPath = diamond.getDiamondAbiFilePath?.() || `diamond-abi/${diamond.getDiamondConfig().diamondName}.json` || `diamond-abi/Diamond.json`;
+      // Normalize path - remove leading "./" if present
+      if (abiPath.startsWith('./')) {
+        abiPath = abiPath.substring(2);
+      }
       
       // Get Diamond address
       const diamondAddress = deploymentData.DiamondAddress;
@@ -222,7 +226,7 @@ export class HelperGenerator {
     // Diamond ABI path
     source += `    /// @notice Path to the Diamond ABI file\n`;
     source += `    /// @dev Used by DiamondFuzzBase to load ABI for testing\n`;
-    source += `    string constant DIAMOND_ABI_PATH = "./diamond-abi/${diamondName}.json";\n\n`;
+    source += `    string constant DIAMOND_ABI_PATH = "diamond-abi/${diamondName}.json";\n\n`;
 
     // Diamond address
     source += `    /// @notice Address of the deployed ${diamondName} contract\n`;
