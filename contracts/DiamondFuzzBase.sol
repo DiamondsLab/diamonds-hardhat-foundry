@@ -102,7 +102,13 @@ abstract contract DiamondFuzzBase is Test {
     /// }
     /// ```
     function _getDiamondABIPath() internal view virtual returns (string memory abiPath) {
-        return "./diamond-abi/ExampleDiamond.json";
+        // Try to load from environment variable first
+        try vm.envString("DIAMOND_ABI_PATH") returns (string memory path) {
+            return path;
+        } catch {
+            // Fallback: This should be overridden by test contracts to use DiamondDeployment.getDiamondABIPath()
+            revert("DiamondFuzzBase: _getDiamondABIPath() must be overridden in test contract. Use: return DiamondDeployment.getDiamondABIPath();");
+        }
     }
 
     /// @notice Load and parse Diamond ABI file
