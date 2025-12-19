@@ -114,11 +114,13 @@ export class ForgeFuzzingFramework {
 
         const deploymentData = deployment.getDeployedDiamondData();
         
+        // Generate helpers and set environment variables
         await this.helperGenerator.generateDeploymentHelpers(
           diamondName,
           networkName,
           chainId,
-          deploymentData
+          deploymentData,
+          deployment // Pass Diamond instance for env var setup
         );
       } else {
         Logger.info("Skipping helper generation");
@@ -205,11 +207,13 @@ export class ForgeFuzzingFramework {
 
     const deploymentData = deployment.getDeployedDiamondData();
 
+    // Generate helpers and set environment variables
     return await this.helperGenerator.generateDeploymentHelpers(
       diamondName,
       networkName,
       chainId,
-      deploymentData
+      deploymentData,
+      deployment // Pass Diamond instance for env var setup
     );
   }
 }

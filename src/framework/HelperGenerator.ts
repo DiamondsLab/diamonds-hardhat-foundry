@@ -31,12 +31,14 @@ export class HelperGenerator {
 
   /**
    * Generate DiamondDeployment.sol from deployment record
+   * Also sets DIAMOND_ADDRESS and DIAMOND_ABI_PATH environment variables for Forge tests
    */
   async generateDeploymentHelpers(
     diamondName: string,
     networkName: string,
     chainId: number,
-    deploymentData: DeployedDiamondData
+    deploymentData: DeployedDiamondData,
+    diamond?: any // Diamond instance from @diamondslab/hardhat-diamonds
   ): Promise<string> {
     Logger.section("Generating Diamond Deployment Helper");
 
@@ -63,7 +65,40 @@ export class HelperGenerator {
     writeFileSync(outputPath, content, "utf8");
 
     Logger.success(`Generated: ${outputPath}`);
+
+    // Set environment variables for Forge tests (if Diamond instance provided)
+    if (diamond) {
+      this.setForgeEnvironmentVariables(diamond, deploymentData);
+    }
+
     return outputPath;
+  }
+
+  /**
+   * Set environment variables for Forge tests
+   * @private
+   */
+  private setForgeEnvironmentVariables(
+    diamond: any,
+    deploymentData: DeployedDiamondData
+  ): void {
+    try {
+      // Get Diamond ABI path
+      const abiPath = diamond.getDiamondAbiFilePath?.() || `./diamond-abi/${deploymentData.DiamondAddress}.json`;
+      
+      // Get Diamond address
+      const diamondAddress = deploymentData.DiamondAddress;
+
+      // Set environment variables
+      process.env.DIAMOND_ABI_PATH = abiPath;
+      process.env.DIAMOND_ADDRESS = diamondAddress;
+
+      Logger.info(`Set DIAMOND_ABI_PATH: ${abiPath}`);
+      Logger.info(`Set DIAMOND_ADDRESS: ${diamondAddress}`);
+    } catch (error: any) {
+      Logger.warn(`Failed to set environment variables: ${error.message}`);
+      Logger.warn("Tests can still use DiamondDeployment.sol overrides");
+    }
   }
 
   /**

@@ -107,7 +107,9 @@ abstract contract DiamondFuzzBase is Test {
             return path;
         } catch {
             // Fallback: This should be overridden by test contracts to use DiamondDeployment.getDiamondABIPath()
-            revert("DiamondFuzzBase: _getDiamondABIPath() must be overridden in test contract. Use: return DiamondDeployment.getDiamondABIPath();");
+            revert(
+                "DiamondFuzzBase: _getDiamondABIPath() must be overridden in test contract or set env var DIAMOND_ABI_PATH. Use: return DiamondDeployment.getDiamondABIPath();"
+            );
         }
     }
 
