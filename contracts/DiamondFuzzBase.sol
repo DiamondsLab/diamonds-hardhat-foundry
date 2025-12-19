@@ -245,6 +245,8 @@ abstract contract DiamondFuzzBase is Test {
 
     /// @notice Grant a role to an address (requires appropriate permissions)
     /// @dev Helper for access control testing
+    /// @dev Note: The caller must have permission to grant the role (e.g., have DEFAULT_ADMIN_ROLE)
+    /// @dev For tests, use vm.prank() to call from an address with the appropriate permissions
     /// @param role The role identifier
     /// @param account The address to grant the role to
     function _grantRole(bytes32 role, address account) internal virtual {
@@ -255,6 +257,15 @@ abstract contract DiamondFuzzBase is Test {
         if (!success) {
             revert DiamondCallFailed(selector, data, returnData);
         }
+    }
+
+    /// @notice Grant a role to the test contract itself
+    /// @dev Convenience helper that grants a role to address(this)
+    /// @dev The caller must have permission to grant the role - use vm.prank() as needed
+    /// @dev Common pattern in setUp(): vm.prank(owner); _grantRoleToSelf(DEFAULT_ADMIN_ROLE);
+    /// @param role The role identifier to grant to the test contract
+    function _grantRoleToSelf(bytes32 role) internal virtual {
+        _grantRole(role, address(this));
     }
 
     /// @notice Revoke a role from an address (requires appropriate permissions)
@@ -295,11 +306,17 @@ abstract contract DiamondFuzzBase is Test {
 
     /// @notice Setup function that loads Diamond address and ABI
     /// @dev Override this to customize setup behavior, but call super.setUp() to load Diamond
+    /// @dev For access control tests, grant necessary roles in setUp() after calling super.setUp()
     /// @custom:example
     /// ```solidity
     /// function setUp() public override {
     ///     super.setUp(); // Load Diamond and ABI
-    ///     // Your custom setup
+    ///     
+    ///     // Grant DEFAULT_ADMIN_ROLE to test contract for access control tests
+    ///     vm.prank(_getDiamondOwner());
+    ///     _grantRoleToSelf(DEFAULT_ADMIN_ROLE);
+    ///     
+    ///     // Additional custom setup
     /// }
     /// ```
     function setUp() public virtual {
