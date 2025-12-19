@@ -63,8 +63,18 @@ abstract contract DiamondFuzzBase is Test {
 
     /// @notice Load deployed Diamond address
     /// @dev Override this function to provide custom Diamond address loading logic
-    /// @dev Default implementation uses vm.envAddress("DIAMOND_ADDRESS") if available, otherwise uses a test deployment
+    /// @dev When using generated DiamondDeployment helper, return DiamondDeployment.getDiamondAddress()
     /// @return diamondAddress The deployed Diamond contract address
+    /// @custom:example
+    /// ```solidity
+    /// // Import the generated helper
+    /// import {DiamondDeployment} from "test/foundry/helpers/DiamondDeployment.sol";
+    ///
+    /// // Override to use helper's address (automatically matches --diamond-name)
+    /// function _loadDiamondAddress() internal view override returns (address) {
+    ///     return DiamondDeployment.getDiamondAddress();
+    /// }
+    /// ```
     function _loadDiamondAddress() internal view virtual returns (address diamondAddress) {
         // Try to load from environment variable
         try vm.envAddress("DIAMOND_ADDRESS") returns (address addr) {
@@ -78,8 +88,19 @@ abstract contract DiamondFuzzBase is Test {
     }
 
     /// @notice Get the path to the Diamond ABI file
-    /// @dev Override this to use a different ABI file path
+    /// @dev Override this to use a different ABI file path or return DiamondDeployment.getDiamondABIPath()
+    /// @dev When using generated DiamondDeployment helper, you can simply return DiamondDeployment.getDiamondABIPath()
     /// @return abiPath The path to the Diamond ABI JSON file
+    /// @custom:example
+    /// ```solidity
+    /// // Import the generated helper
+    /// import {DiamondDeployment} from "test/foundry/helpers/DiamondDeployment.sol";
+    ///
+    /// // Override to use helper's path (automatically matches --diamond-name)
+    /// function _getDiamondABIPath() internal view override returns (string memory) {
+    ///     return DiamondDeployment.getDiamondABIPath();
+    /// }
+    /// ```
     function _getDiamondABIPath() internal view virtual returns (string memory abiPath) {
         return "./diamond-abi/ExampleDiamond.json";
     }

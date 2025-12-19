@@ -179,6 +179,16 @@ export class HelperGenerator {
     source += " */\n";
     source += "library DiamondDeployment {\n";
 
+    // Diamond name
+    source += `    /// @notice Name of the Diamond contract\n`;
+    source += `    /// @dev Used for identifying the Diamond in tests\n`;
+    source += `    string constant DIAMOND_NAME = "${diamondName}";\n\n`;
+
+    // Diamond ABI path
+    source += `    /// @notice Path to the Diamond ABI file\n`;
+    source += `    /// @dev Used by DiamondFuzzBase to load ABI for testing\n`;
+    source += `    string constant DIAMOND_ABI_PATH = "./diamond-abi/${diamondName}.json";\n\n`;
+
     // Diamond address
     source += `    /// @notice Address of the deployed ${diamondName} contract\n`;
     source += `    /// @dev This is the main Diamond proxy address\n`;
@@ -211,6 +221,22 @@ export class HelperGenerator {
     source += "    // ========================================\n";
     source += "    // Helper Functions\n";
     source += "    // ========================================\n\n";
+
+    source += "    /**\n";
+    source += "     * @notice Get the Diamond name\n";
+    source += "     * @return The name of the Diamond contract\n";
+    source += "     */\n";
+    source += "    function getDiamondName() internal pure returns (string memory) {\n";
+    source += "        return DIAMOND_NAME;\n";
+    source += "    }\n\n";
+
+    source += "    /**\n";
+    source += "     * @notice Get the path to the Diamond ABI file\n";
+    source += "     * @return The path to the Diamond ABI JSON file\n";
+    source += "     */\n";
+    source += "    function getDiamondABIPath() internal pure returns (string memory) {\n";
+    source += "        return DIAMOND_ABI_PATH;\n";
+    source += "    }\n\n";
 
     source += "    /**\n";
     source += "     * @notice Get the Diamond contract address\n";
