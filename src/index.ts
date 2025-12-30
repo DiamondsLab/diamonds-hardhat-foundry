@@ -1,4 +1,5 @@
 import { extendConfig, extendEnvironment, internalTask, task } from "hardhat/config";
+import "./tasks/coverage";
 import "./tasks/deploy";
 import "./tasks/generate-helpers";
 import "./tasks/init";
@@ -7,17 +8,17 @@ import "./types/hardhat";
 
 import { existsSync, writeFileSync } from "fs";
 import {
-  TASK_COMPILE_GET_REMAPPINGS,
-  TASK_COMPILE_TRANSFORM_IMPORT_NAME,
+    TASK_COMPILE_GET_REMAPPINGS,
+    TASK_COMPILE_TRANSFORM_IMPORT_NAME,
 } from "hardhat/builtin-tasks/task-names";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import path from "path";
 import picocolors from "picocolors";
 import {
-  getForgeConfig,
-  getRemappings,
-  HardhatFoundryError,
-  installDependency,
+    getForgeConfig,
+    getRemappings,
+    HardhatFoundryError,
+    installDependency,
 } from "./foundry";
 import { validateConfig } from "./utils/validation";
 
