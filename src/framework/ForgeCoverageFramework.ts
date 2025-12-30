@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { Logger } from "../utils/logger";
 import { CoverageOptions } from "../types/config";
+import { Logger } from "../utils/logger";
 
 /**
  * ForgeCoverageFramework - Orchestrates forge coverage execution for Diamond contracts

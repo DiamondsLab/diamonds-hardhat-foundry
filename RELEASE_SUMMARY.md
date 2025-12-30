@@ -1,3 +1,203 @@
+# Release Summary
+
+## Version 2.2.0 - Coverage Feature
+
+### Overview
+
+Version 2.2.0 adds comprehensive **forge coverage** integration for Diamond contracts. This release introduces the `diamonds-forge:coverage` task, providing developers with powerful code coverage analysis capabilities while maintaining the seamless Diamond deployment and testing workflow established in v2.x.
+
+### Key Features
+
+#### 🔍 Forge Coverage Integration
+
+- **New Task**: `npx hardhat diamonds-forge:coverage` - Run coverage analysis on Diamond contracts
+- **Automatic Workflow**: Deploy Diamond → Generate helpers → Execute coverage
+- **Multiple Report Formats**: Summary (terminal), LCOV (CI/CD), Debug (detailed), Bytecode (low-level)
+- **40+ Options**: Complete access to all forge coverage command-line options
+- **Network Fork Support**: Accurate coverage on forked networks with real state
+
+#### 📊 Coverage Report Formats
+
+1. **Summary Report** (default):
+   ```
+   | Contract      | Line % | Statement % | Branch % | Function % |
+   |--------------|--------|-------------|----------|------------|
+   | MyFacet      | 95.23% | 94.11%     | 87.50%  | 100.00%   |
+   ```
+
+2. **LCOV Report** (CI/CD integration):
+   ```bash
+   npx hardhat diamonds-forge:coverage \
+     --diamond-name MyDiamond \
+     --report lcov \
+     --report-file coverage/lcov.info
+   ```
+   - Compatible with Coveralls, Codecov, SonarQube
+   - Supports LCOV v1 and v2 formats
+   - Automatic merging with existing reports
+
+3. **Debug Report** (detailed analysis):
+   - Function-by-function coverage breakdown
+   - Execution counts for each line
+   - Branch coverage details
+
+4. **Bytecode Report** (advanced):
+   - Opcode-level coverage analysis
+   - Gas optimization insights
+
+#### 🎯 Advanced Filtering
+
+**Test Filtering:**
+```bash
+# Run coverage for specific test patterns
+npx hardhat diamonds-forge:coverage \
+  --match-contract "Unit" \
+  --match-test "testTransfer"
+
+# Exclude integration tests
+npx hardhat diamonds-forge:coverage \
+  --no-match-path "test/foundry/integration/*"
+```
+
+**Coverage Filtering:**
+```bash
+# Exclude test contracts and libraries from coverage
+npx hardhat diamonds-forge:coverage \
+  --no-match-coverage "test/*,mock/*,lib/*"
+```
+
+#### 🔗 CI/CD Integration
+
+**GitHub Actions Example:**
+```yaml
+- name: Run Coverage
+  run: |
+    npx hardhat node &
+    sleep 5
+    npx hardhat diamonds-forge:coverage \
+      --diamond-name MyDiamond \
+      --network localhost \
+      --report lcov \
+      --report-file coverage/lcov.info
+
+- name: Upload to Codecov
+  uses: codecov/codecov-action@v3
+  with:
+    files: ./coverage/lcov.info
+```
+
+**GitLab CI Example:**
+```yaml
+coverage:
+  script:
+    - npx hardhat node &
+    - sleep 5
+    - npx hardhat diamonds-forge:coverage
+        --diamond-name MyDiamond
+        --network localhost
+        --report lcov
+        --report-file coverage/lcov.info
+  coverage: '/All files[^|]*\\|[^|]*\\s+([\\d\\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura.xml
+```
+
+### What's New
+
+#### Added
+
+- **`diamonds-forge:coverage` Hardhat Task**:
+  - Full forge coverage integration with Diamond workflow
+  - 40+ command options for comprehensive control
+  - Automatic deployment and helper generation
+  - Network fork URL construction
+  
+- **ForgeCoverageFramework Class**:
+  - Programmatic API for coverage execution
+  - Modular option builders (report, filter, display, test, EVM, build)
+  - TypeScript type safety with CoverageOptions interface
+  - Comprehensive error handling and logging
+
+- **Coverage Type Definitions**:
+  - `CoverageOptions` - Complete interface for all forge coverage options
+  - `CoverageReportType` - Union type for report formats
+  - `ColorMode` - Type for output color control
+  - Full JSDoc documentation
+
+- **Coverage Documentation**:
+  - [FOUNDRY_FORGE_DIAMONDS_COVERAGE.md](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md) - Complete guide (700+ lines)
+  - README.md coverage section with quick start
+  - TROUBLESHOOTING.md coverage issues section (8 common problems)
+  - CI/CD integration examples
+
+### Usage Examples
+
+#### Basic Coverage
+
+```bash
+# Default summary report
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond
+```
+
+#### CI/CD Coverage
+
+```bash
+# Generate LCOV for CI services
+npx hardhat diamonds-forge:coverage \
+  --diamond-name MyDiamond \
+  --network localhost \
+  --report lcov \
+  --report-file coverage/lcov.info
+```
+
+#### Filtered Coverage
+
+```bash
+# Coverage for specific test patterns
+npx hardhat diamonds-forge:coverage \
+  --diamond-name MyDiamond \
+  --match-contract "Unit" \
+  --no-match-coverage "test/*,mock/*"
+```
+
+#### Multiple Reports
+
+```bash
+# Generate multiple report formats
+npx hardhat diamonds-forge:coverage \
+  --diamond-name MyDiamond \
+  --report summary \
+  --report lcov \
+  --report debug
+```
+
+### Migration Notes
+
+**No Breaking Changes**: This release is fully backward compatible with v2.1.0. All existing commands and APIs continue to work without modification.
+
+**New Dependencies**: None. The coverage feature uses the existing Foundry installation.
+
+**Configuration**: No configuration changes required. The coverage task uses existing `diamondsFoundry` config settings.
+
+### Documentation
+
+- **Coverage Guide**: [docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md)
+- **README.md**: Coverage section and examples
+- **TROUBLESHOOTING.md**: Coverage issues and solutions
+- **CHANGELOG.md**: Detailed v2.2.0 changes
+
+### Next Steps
+
+1. **Try Coverage**: Run `npx hardhat diamonds-forge:coverage --diamond-name YourDiamond`
+2. **Integrate CI/CD**: Add LCOV report generation to your CI pipeline
+3. **Set Coverage Goals**: Use coverage metrics to guide testing efforts
+4. **Read the Guide**: See [FOUNDRY_FORGE_DIAMONDS_COVERAGE.md](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md) for comprehensive documentation
+
+---
+
 # Release Summary: v2.1.0 - 100% Test Pass Rate Achievement
 
 ## Overview

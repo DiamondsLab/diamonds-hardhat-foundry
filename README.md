@@ -14,7 +14,8 @@ Hardhat plugin that seamlessly integrates Foundry testing with [ERC-2535 Diamond
 - 🚀 **Automated Diamond Deployment** - Deploy Diamond contracts with a single command
 - 📝 **Helper Generation** - Automatically generate Solidity helpers with deployment data
 - 🧪 **Test Scaffolding** - Create unit, integration, and fuzz test templates
-- 🔧 **Hardhat Tasks** - CLI tasks for init, deploy, generate, and test workflows
+- � **Coverage Testing** - Run forge coverage with full Diamond integration and multiple report formats
+- 🔧 **Hardhat Tasks** - CLI tasks for init, deploy, generate, test, and coverage workflows
 - 🎯 **Programmatic API** - Use framework classes directly in scripts
 - 📚 **Base Contracts** - Reusable Solidity utilities and test base classes
 - ⚡ **Foundry Integration** - Leverage Forge's speed and fuzzing capabilities
@@ -341,6 +342,46 @@ npx hardhat diamonds-forge:test --match-test "testOwnership" --verbosity 4
 # Skip deployment (use existing)
 npx hardhat diamonds-forge:test --skip-deployment --match-contract "MyTest"
 ```
+
+### `diamonds-forge:coverage`
+
+Run forge coverage for your Diamond contracts with full integration support.
+
+**Options:**
+
+- `--diamond-name <name>` - Diamond to analyze (default: from config)
+- `--network <name>` - Network for deployment (default: from config)
+- `--report <format>` - Report format: summary, lcov, debug, bytecode (default: summary)
+- `--report-file <path>` - Output file for coverage report
+- `--lcov-version <version>` - LCOV version for LCOV reports (default: v1)
+- `--match-test <pattern>` - Run tests matching pattern
+- `--match-contract <pattern>` - Run tests in matching contracts
+- `--match-path <glob>` - Run tests in files matching glob
+- `--no-match-test <pattern>` - Skip tests matching pattern
+- `--no-match-contract <pattern>` - Skip tests in matching contracts
+- `--no-match-path <glob>` - Skip tests in files matching glob
+- `--no-match-coverage <pattern>` - Exclude contracts from coverage
+- `--verbosity <level>` - Verbosity level: 0-5 (default: 0)
+- `--color <mode>` - Color output: auto, always, never (default: auto)
+- And many more options for filtering, optimization, and EVM configuration
+
+**Example:**
+
+```bash
+# Run coverage with default summary
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond
+
+# Generate LCOV report for CI/CD
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --report lcov --report-file coverage/lcov.info
+
+# Coverage for specific test patterns
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --match-contract "Unit" --verbosity 2
+
+# Multiple report formats
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --report summary --report lcov --report debug
+```
+
+**See the [Coverage Guide](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md) for complete documentation, CI/CD integration examples, and best practices.**
 
 ## Dynamic Helper Generation
 

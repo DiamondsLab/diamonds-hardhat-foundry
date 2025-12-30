@@ -9,6 +9,7 @@ This guide covers common issues when using `@diamondslab/diamonds-hardhat-foundr
 - [Test Execution Failures](#test-execution-failures)
 - [Import Resolution Problems](#import-resolution-problems)
 - [Network and Deployment Issues](#network-and-deployment-issues)
+- [Coverage Task Issues](#coverage-task-issues)
 
 ---
 
@@ -417,6 +418,270 @@ npx hardhat diamonds-forge:test \
   --diamond-name YourDiamond \
   --network localhost
 ```
+
+---
+
+## Coverage Task Issues
+
+### Problem: Coverage Command Shows "No Tests Found"
+
+**Symptoms:**
+```
+ℹ Executing: forge coverage --fork-url http://127.0.0.1:8545
+No tests match the provided pattern
+```
+
+**Root Cause:** Test filtering patterns are too restrictive or tests aren't in the expected location.
+
+**Solution 1: Check test file locations**
+
+```bash
+# Verify tests exist
+find test/foundry -name "*.t.sol" -type f
+```
+
+**Solution 2: Remove test filters**
+
+```bash
+# Run without filters first
+npx hardhat diamonds-forge:coverage --diamond-name YourDiamond
+
+# Then add specific patterns
+npx hardhat diamonds-forge:coverage --diamond-name YourDiamond --match-contract "Unit"
+```
+
+**Solution 3: Check forge configuration**
+
+Verify `foundry.toml` has correct test paths:
+
+```toml
+[profile.default]
+test = "test/foundry"
+src = "contracts"
+out = "artifacts/forge"
+```
+
+### Problem: LCOV Report File Not Generated
+
+**Symptoms:**
+```
+✓ Coverage completed
+ℹ Report file: coverage/lcov.info
+(But file doesn't exist)
+```
+
+**Root Cause:** Output directory doesn't exist or insufficient permissions.
+
+**Solution 1: Create output directory**
+
+```bash
+mkdir -p coverage
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --report lcov \
+  --report-file coverage/lcov.info
+```
+
+**Solution 2: Use absolute path**
+
+```bash
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --report lcov \
+  --report-file "$PWD/coverage/lcov.info"
+```
+
+**Solution 3: Check file permissions**
+
+```bash
+ls -la coverage/
+chmod 755 coverage/
+```
+
+### Problem: Coverage Shows 0% for All Contracts
+
+**Symptoms:**
+```
+| Contract      | Line % | Statement % | Branch % | Function % |
+|--------------|--------|-------------|----------|-----------|
+| MyFacet      | 0.00%  | 0.00%      | 0.00%   | 0.00%     |
+```
+
+**Root Cause:** Tests aren't actually executing contract functions, or coverage is excluding your contracts.
+
+**Solution 1: Verify tests are passing**
+
+```bash
+# Run tests first to ensure they work
+npx hardhat diamonds-forge:test --diamond-name YourDiamond
+```
+
+**Solution 2: Check --no-match-coverage patterns**
+
+Remove exclusion patterns that might be too broad:
+
+```bash
+# Don't exclude everything
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --no-match-coverage "test/*" \
+  --no-match-coverage "script/*"
+```
+
+**Solution 3: Enable debug output**
+
+```bash
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --verbosity 3 \
+  --report debug
+```
+
+### Problem: "Fork URL Connection Failed"
+
+**Symptoms:**
+```
+Error: Failed to connect to fork URL: http://127.0.0.1:8545
+```
+
+**Root Cause:** Hardhat node is not running, or network configuration is incorrect.
+
+**Solution 1: Start Hardhat node**
+
+```bash
+# Terminal 1: Start node
+npx hardhat node
+
+# Terminal 2: Run coverage
+npx hardhat diamonds-forge:coverage --diamond-name YourDiamond --network localhost
+```
+
+**Solution 2: Verify network configuration**
+
+Check `hardhat.config.ts`:
+
+```typescript
+networks: {
+  localhost: {
+    url: "http://127.0.0.1:8545",
+    chainId: 31337,
+  },
+}
+```
+
+**Solution 3: Check for port conflicts**
+
+```bash
+# See if port 8545 is already in use
+lsof -i :8545
+
+# Kill conflicting process if needed
+kill -9 <PID>
+```
+
+### Problem: "Out of Memory" During Coverage
+
+**Symptoms:**
+```
+Error: JavaScript heap out of memory
+```
+
+**Root Cause:** Large codebase or too many tests running simultaneously.
+
+**Solution 1: Increase Node memory**
+
+```bash
+NODE_OPTIONS="--max-old-space-size=8192" npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond
+```
+
+**Solution 2: Run coverage on subsets**
+
+```bash
+# Run coverage for unit tests only
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --match-path "test/foundry/unit/*"
+
+# Then integration tests
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --match-path "test/foundry/integration/*"
+```
+
+**Solution 3: Reduce test scope**
+
+```bash
+# Focus on specific contracts
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --match-contract "MyFacet" \
+  --no-match-coverage "test/*,mock/*,lib/*"
+```
+
+### Problem: LCOV Version Incompatibility with CI Tools
+
+**Symptoms:**
+```
+Coveralls error: Invalid LCOV format
+```
+
+**Root Cause:** CI tool expects different LCOV version than what's generated.
+
+**Solution: Specify LCOV version**
+
+```bash
+# For older CI tools (use v1)
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --report lcov \
+  --lcov-version v1 \
+  --report-file coverage/lcov.info
+
+# For modern CI tools (use v2)
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --report lcov \
+  --lcov-version v2 \
+  --report-file coverage/lcov.info
+```
+
+**Verify LCOV version:**
+
+```bash
+head -1 coverage/lcov.info
+# Should show: TN: or SF: depending on version
+```
+
+### Problem: "Diamond Has No Code" During Coverage
+
+**Symptoms:**
+```
+Error: Diamond contract has no code at address 0x...
+```
+
+**Root Cause:** Diamond wasn't deployed before running coverage.
+
+**Solution: Deploy first**
+
+The coverage task should handle this automatically, but if it doesn't:
+
+```bash
+# Explicitly deploy first
+npx hardhat diamonds-forge:deploy \
+  --diamond-name YourDiamond \
+  --network localhost \
+  --force
+
+# Then run coverage
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --network localhost
+```
+
+**For more coverage documentation, see:**
+- [Coverage Guide](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md) - Complete usage guide
+- [README.md](./README.md#diamonds-forgecoverage) - Quick reference
 
 ---
 

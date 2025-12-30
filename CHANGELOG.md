@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2025-12-30
+
+### Summary
+
+This release adds comprehensive **forge coverage** integration for Diamond contracts. The new `diamonds-forge:coverage` task provides full access to Foundry's coverage capabilities with automatic Diamond deployment, helper generation, and support for multiple report formats (summary, LCOV, debug, bytecode).
+
+### Added
+
+- **Coverage Task** (`diamonds-forge:coverage`):
+  - Integrated forge coverage with Diamond deployment workflow
+  - Automatic deployment and helper generation before coverage execution
+  - Support for all forge coverage report formats: summary, LCOV (v1/v2), debug, bytecode
+  - 40+ command-line options for comprehensive coverage control
+  - Network fork integration for accurate on-chain state testing
+  - CI/CD-ready LCOV report generation for code coverage services
+
+- **ForgeCoverageFramework Class**:
+  - Core framework class for executing forge coverage with Diamond integration
+  - Modular option builders for report, filtering, display, test, EVM, and build options
+  - Comprehensive error handling and logging
+  - Programmatic API for use in custom scripts
+
+- **Coverage Type Definitions**:
+  - `CoverageOptions` interface with complete type safety for all forge coverage options
+  - `CoverageReportType` union type for report format validation
+  - `ColorMode` type for output color control
+  - Full JSDoc documentation for all coverage parameters
+
+- **Coverage Documentation**:
+  - Complete coverage guide ([FOUNDRY_FORGE_DIAMONDS_COVERAGE.md](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md))
+  - CI/CD integration examples for GitHub Actions and GitLab CI
+  - Common use cases and best practices
+  - Troubleshooting section in main TROUBLESHOOTING.md
+  - README.md coverage section with quick start examples
+
+### Changed
+
+- README.md: Added coverage feature to features list and command documentation
+- TROUBLESHOOTING.md: Added "Coverage Task Issues" section with 8 common problems and solutions
+
 ## [2.1.0] - 2024-12-19
 
 ### Summary
