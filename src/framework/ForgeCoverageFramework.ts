@@ -1,37 +1,138 @@
 import { spawn } from "child_process";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { CoverageOptions } from "../types/config";
+import { isFoundryInstalled } from "../utils/foundry";
 import { Logger } from "../utils/logger";
+import { DeploymentManager } from "./DeploymentManager";
+import { HelperGenerator } from "./HelperGenerator";
 
 /**
- * ForgeCoverageFramework - Orchestrates forge coverage execution for Diamond contracts
+ * ForgeCoverageFramework - Main orchestration class for Forge coverage with Diamonds
  *
- * Responsibilities:
- * 1. Build forge coverage command with all options
- * 2. Execute forge coverage with proper fork URL
- * 3. Stream output to terminal
- * 4. Handle errors appropriately
+ * Coordinates:
+ * 1. Diamond deployment via DeploymentManager
+ * 2. Helper generation via HelperGenerator
+ * 3. Forge coverage execution
+ *
+ * Mirrors ForgeFuzzingFramework design for consistency and code reuse
  */
 export class ForgeCoverageFramework {
-  constructor(private hre: HardhatRuntimeEnvironment) {}
+  private deploymentManager: DeploymentManager;
+  private helperGenerator: HelperGenerator;
+
+  constructor(private hre: HardhatRuntimeEnvironment) {
+    this.deploymentManager = new DeploymentManager(hre);
+    this.helperGenerator = new HelperGenerator(hre);
+  }
 
   /**
-   * Run forge coverage with provided options
+   * Run complete Forge coverage workflow
+   *
+   * Workflow:
+   * 1. Validate Foundry installation
+   * 2. Deploy or reuse Diamond
+   * 3. Generate Solidity helpers
+   * 4. Run forge coverage with options
    *
    * @param options - Coverage execution options
-   * @returns Promise<boolean> - true if coverage succeeds, false otherwise
+   * @returns Promise<boolean> - true if coverage succeeds
    */
   async runCoverage(options: CoverageOptions = {}): Promise<boolean> {
-    Logger.section("Forge Coverage - Execution");
+    const {
+      diamondName = "ExampleDiamond",
+      networkName = "hardhat",
+      force = false,
+      skipDeployment = false,
+      skipHelpers = false,
+      writeDeployedDiamondData = false,
+    } = options;
+
+    Logger.section("Running Forge Coverage with Diamond");
+
+    // Step 1: Validate Foundry
+    if (!isFoundryInstalled()) {
+      Logger.error(
+        "Foundry is not installed. Please install it: https://book.getfoundry.sh/getting-started/installation"
+      );
+      return false;
+    }
 
     try {
-      // Build command arguments
-      const args = this.buildCoverageCommand(options);
+      // Step 2: Ensure Diamond deployment
+      if (!skipDeployment) {
+        Logger.section("Step 1/3: Ensuring Diamond Deployment");
+        await this.deploymentManager.ensureDeployment(
+          diamondName,
+          networkName,
+          force,
+          writeDeployedDiamondData
+        );
+      } else {
+        Logger.info("Skipping deployment (using existing)");
+      }
+
+      // Step 3: Generate helpers
+      if (!skipHelpers) {
+        Logger.section("Step 2/3: Generating Solidity Helpers");
+
+        const deployment = await this.deploymentManager.getDeployment(
+          diamondName,
+          networkName
+        );
+
+        if (!deployment) {
+          Logger.warn("⚠ No deployment record found");
+          if (!skipDeployment) {
+            Logger.info("ℹ Using cached deployment (ephemeral)");
+          }
+        } else {
+          Logger.info("Using deployment record");
+        }
+
+        const provider = this.hre.ethers.provider;
+        const network = await provider.getNetwork();
+        const chainId = Number(network.chainId);
+
+        const deploymentData = deployment
+          ? deployment.getDeployedDiamondData()
+          : await this.deploymentManager
+              .ensureDeployment(diamondName, networkName, false, false)
+              .then((d) => d.getDeployedDiamondData());
+
+        await this.helperGenerator.generateDeploymentHelpers(
+          diamondName,
+          networkName,
+          chainId,
+          deploymentData,
+          deployment || undefined
+        );
+      } else {
+        Logger.info("Skipping helper generation");
+      }
+
+      // Step 4: Run coverage
+      Logger.section("Step 3/3: Running Forge Coverage");
+
+      // Get fork URL for network (same pattern as ForgeFuzzingFramework)
+      const provider = this.hre.ethers.provider;
+      let forkUrl: string;
+
+      if (networkName !== "hardhat") {
+        forkUrl = (provider as any).connection?.url || "http://127.0.0.1:8545";
+      } else {
+        forkUrl = "http://127.0.0.1:8545";
+        Logger.warn(
+          "⚠️  Network is \"hardhat\" - defaulting to localhost fork: http://127.0.0.1:8545"
+        );
+        Logger.warn("💡 Make sure Hardhat node is running: npx hardhat node");
+        Logger.warn("💡 Or specify network explicitly: --network localhost");
+      }
+
+      const args = this.buildCoverageCommand({ ...options, forkUrl });
 
       Logger.info(`Executing: forge coverage ${args.join(" ")}`);
-      Logger.info("⏳ Running coverage analysis (this may take a while)...\n");
+      Logger.info("⏳ Running coverage analysis (this may take a while)...");
 
-      // Execute forge coverage
       const success = await this.executeForge(args);
 
       if (success) {
@@ -42,7 +143,7 @@ export class ForgeCoverageFramework {
 
       return success;
     } catch (error: any) {
-      Logger.error(`Coverage execution error: ${error.message}`);
+      Logger.error(`Coverage execution failed: ${error.message}`);
       return false;
     }
   }
@@ -80,9 +181,9 @@ export class ForgeCoverageFramework {
 
     // Multiple --report flags
     if (options.report && options.report.length > 0) {
-      options.report.forEach((reportType) => {
+      for (const reportType of options.report) {
         args.push("--report", reportType);
-      });
+      }
     }
 
     if (options.reportFile) {
@@ -266,12 +367,13 @@ export class ForgeCoverageFramework {
    */
   private executeForge(args: string[]): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      const forgeProcess = spawn("forge", ["coverage", ...args], {
+      const forge = spawn("forge", ["coverage", ...args], {
         cwd: this.hre.config.paths.root,
-        stdio: "inherit", // Stream output directly to terminal
+        stdio: "inherit",
+        shell: true,
       });
 
-      forgeProcess.on("close", (code) => {
+      forge.on("close", (code) => {
         if (code === 0) {
           resolve(true);
         } else {
@@ -279,8 +381,9 @@ export class ForgeCoverageFramework {
         }
       });
 
-      forgeProcess.on("error", (error) => {
-        reject(new Error(`Failed to execute forge coverage: ${error.message}`));
+      forge.on("error", (error) => {
+        Logger.error(`Failed to execute forge: ${error.message}`);
+        reject(error);
       });
     });
   }

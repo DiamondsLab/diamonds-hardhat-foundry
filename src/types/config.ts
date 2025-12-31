@@ -66,8 +66,21 @@ export type ColorMode = "auto" | "always" | "never";
 /**
  * Coverage options for forge coverage command
  * Maps to all available forge coverage command-line options
+ * Plus orchestration options for Diamond deployment and helpers
  */
 export interface CoverageOptions {
+  // Orchestration options (matching ForgeFuzzingFramework pattern)
+  /** Name of the Diamond to analyze */
+  diamondName?: string;
+  /** Network name for deployment (hardhat, localhost, etc.) */
+  networkName?: string;
+  /** Skip Diamond deployment step */
+  skipDeployment?: boolean;
+  /** Skip helper generation step */
+  skipHelpers?: boolean;
+  /** Write deployment data to file for reuse */
+  writeDeployedDiamondData?: boolean;
+
   // Report options
   /** Report type(s) - can specify multiple */
   report?: CoverageReportType[];
