@@ -217,14 +217,19 @@ task("diamonds-forge:coverage", "Run forge coverage for Diamond contracts")
       Logger.section("Step 3/3: Running Forge Coverage");
 
       // Construct fork URL for network
-      let forkUrl: string | undefined;
+      // Coverage requires forking from a running network to access deployed contracts
+      let forkUrl: string;
       if (networkName !== "hardhat") {
+        // Use the configured network's URL
         forkUrl = (provider as any)._hardhatProvider?._wrapped?.url || "http://127.0.0.1:8545";
         Logger.info(`Forking from ${networkName}: ${forkUrl}`);
       } else {
-        Logger.warn(`⚠️  Using ephemeral "${networkName}" network - coverage may not access deployed Diamond`);
-        Logger.warn(`💡 For deployed Diamond coverage, use: npx hardhat diamonds-forge:coverage --diamond-name ${diamondName} --network localhost`);
-        Logger.warn(`💡 Make sure to start Hardhat node first: npx hardhat node`);
+        // Default to localhost for hardhat network
+        // This assumes user has `npx hardhat node` running
+        forkUrl = "http://127.0.0.1:8545";
+        Logger.warn(`⚠️  Network is "${networkName}" - defaulting to localhost fork: ${forkUrl}`);
+        Logger.warn(`💡 Make sure Hardhat node is running: npx hardhat node`);
+        Logger.warn(`💡 Or specify network explicitly: --network localhost`);
       }
 
       // Lazy-load framework to avoid circular dependency

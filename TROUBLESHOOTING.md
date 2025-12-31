@@ -537,6 +537,46 @@ npx hardhat diamonds-forge:coverage \
   --report debug
 ```
 
+### Problem: "Diamond has no code" During Coverage
+
+**Symptoms:**
+```
+[FAIL: DiamondFuzzBase: Diamond has no code] setUp() (gas: 0)
+[FAIL: InvalidDiamond(0x..., "Diamond has no code deployed")] setUp() (gas: 0)
+```
+
+**Root Cause:** Coverage is trying to fork from a network where the Diamond isn't deployed yet.
+
+**Critical:** Coverage **requires** a deployed Diamond on the target network because Forge forks from that network to run tests. You cannot run coverage against an ephemeral deployment.
+
+**Solution: Deploy Diamond first, then run coverage**
+
+```bash
+# Terminal 1: Start Hardhat node
+npx hardhat node
+
+# Terminal 2: Deploy Diamond to localhost network
+npx hardhat diamonds-forge:deploy \
+  --diamond-name YourDiamond \
+  --network localhost
+
+# Terminal 3: Run coverage against deployed Diamond
+npx hardhat diamonds-forge:coverage \
+  --diamond-name YourDiamond \
+  --network localhost
+```
+
+**Important Notes:**
+- **Always specify `--network localhost`** when running coverage
+- The network must have the Diamond deployed before running coverage
+- Coverage cannot work with `--network hardhat` (ephemeral in-memory network)
+- This is the same workflow as `diamonds-forge:test` - both need deployed contracts
+
+**Workflow Summary:**
+1. Start persistent network (`npx hardhat node`)
+2. Deploy Diamond (`diamonds-forge:deploy --network localhost`)
+3. Run coverage (`diamonds-forge:coverage --network localhost`)
+
 ### Problem: "Fork URL Connection Failed"
 
 **Symptoms:**

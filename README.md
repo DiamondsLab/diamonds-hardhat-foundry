@@ -347,6 +347,8 @@ npx hardhat diamonds-forge:test --skip-deployment --match-contract "MyTest"
 
 Run forge coverage for your Diamond contracts with full integration support.
 
+**Important:** Coverage requires a deployed Diamond on a persistent network (like localhost). See workflow below.
+
 **Options:**
 
 - `--diamond-name <name>` - Diamond to analyze (default: from config)
@@ -365,21 +367,53 @@ Run forge coverage for your Diamond contracts with full integration support.
 - `--color <mode>` - Color output: auto, always, never (default: auto)
 - And many more options for filtering, optimization, and EVM configuration
 
-**Example:**
+**Workflow (Required):**
 
 ```bash
-# Run coverage with default summary
-npx hardhat diamonds-forge:coverage --diamond-name MyDiamond
+# Step 1: Start Hardhat node (persistent network)
+npx hardhat node
+
+# Step 2: Deploy Diamond to localhost network (in another terminal)
+npx hardhat diamonds-forge:deploy --diamond-name MyDiamond --network localhost
+
+# Step 3: Run coverage against deployed Diamond
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --network localhost
+```
+
+**Examples:**
+
+```bash
+# Basic coverage with default summary
+npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --network localhost
 
 # Generate LCOV report for CI/CD
-npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --report lcov --report-file coverage/lcov.info
+npx hardhat diamonds-forge:coverage \
+  --diamond-name MyDiamond \
+  --network localhost \
+  --report lcov \
+  --report-file coverage/lcov.info
 
 # Coverage for specific test patterns
-npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --match-contract "Unit" --verbosity 2
+npx hardhat diamonds-forge:coverage \
+  --diamond-name MyDiamond \
+  --network localhost \
+  --match-contract "Unit" \
+  --verbosity 2
 
 # Multiple report formats
-npx hardhat diamonds-forge:coverage --diamond-name MyDiamond --report summary --report lcov --report debug
+npx hardhat diamonds-forge:coverage \
+  --diamond-name MyDiamond \
+  --network localhost \
+  --report summary \
+  --report lcov \
+  --report debug
 ```
+
+**Important Notes:**
+- Always specify `--network localhost` (coverage needs deployed contracts)
+- Cannot use `--network hardhat` (ephemeral in-memory network)
+- Diamond must be deployed before running coverage
+- Same workflow as `diamonds-forge:test` - both require persistent network
 
 **See the [Coverage Guide](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md) for complete documentation, CI/CD integration examples, and best practices.**
 
