@@ -68,9 +68,9 @@
     "typescript": "~5.0.0"
   },
   "peerDependencies": {
-    "@diamondslab/diamonds": "workspace:^",
-    "@diamondslab/hardhat-diamonds": "workspace:^",
-    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@diamondslab/diamonds": "^1.0.0",
+    "@diamondslab/hardhat-diamonds": "^1.1.14",
+    "@nomicfoundation/hardhat-ethers": "*",
     "ethers": "^6.0.0",
     "hardhat": "^2.26.0"
   },
