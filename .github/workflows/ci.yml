@@ -116,7 +116,7 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Run Prettier
+      - name: Run Prettier Check
         run: yarn prettier --check
 
       - name: Run ESLint

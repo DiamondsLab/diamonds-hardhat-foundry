@@ -16,8 +16,8 @@ The DevContainer provides a consistent development environment with all necessar
 - **Base Image:** Node.js 20 (Bookworm)
 - **Tools Installed:**
   - Node.js 20
-  - Yarn 4.10.3 (via Corepack)
-  - Foundry suite (Forge, Cast, Anvil, Chisel)
+  - Yarn 4.10.3 (via Corepack, not apt - this ensures we get the modern Yarn version)
+  - Foundry suite (Forge, Cast, Anvil, Chisel) installed for vscode user
   - Git
   - Build essentials for native dependencies
 - **VS Code Integration:** Pre-configured extensions and settings for TypeScript, Solidity, ESLint, and Prettier
@@ -155,7 +155,7 @@ If CI fails with "container image not found":
 
 ### Dependency Installation Timeout
 
-If dependencies take longer than 5 minutes:
+If dependencies take longer than the configured threshold (defined as MAX_INSTALL_TIME_SECONDS=300 in the validation script):
 
 1. Check if Yarn cache volume is properly mounted
 2. Verify network connectivity in the runner
