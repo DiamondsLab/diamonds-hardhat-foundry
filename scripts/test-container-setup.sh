@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Configuration
+MAX_INSTALL_TIME_SECONDS=300  # 5 minutes
+
 echo "=== Container Setup Validation ==="
 echo ""
 
@@ -100,7 +103,7 @@ if [ "$SKIP_INSTALL" != "true" ]; then
   DURATION=$((END_TIME - START_TIME))
   echo "✓ Dependencies installed in ${DURATION} seconds"
   
-  if [ $DURATION -gt 300 ]; then
+  if [ $DURATION -gt $MAX_INSTALL_TIME_SECONDS ]; then
     echo "⚠ WARNING: Installation took more than 5 minutes ($DURATION seconds)"
   else
     echo "✓ Installation completed within 5 minutes"
