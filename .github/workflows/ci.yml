@@ -1,0 +1,242 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-devcontainer
+  NODE_ENV: test
+
+jobs:
+  validate-container:
+    name: Validate Container Setup
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository }}-devcontainer:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      volumes:
+        - /home/runner/.cache/yarn:/home/vscode/.cache/yarn
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create and run container validation script
+        run: |
+          mkdir -p scripts
+          cat > scripts/test-container-setup.sh << 'EOF'
+          #!/bin/bash
+          set -e
+          
+          echo "=== Container Setup Validation ==="
+          echo ""
+          
+          # Check Node.js version
+          echo "Checking Node.js version..."
+          NODE_VERSION=$(node --version)
+          echo "✓ Node.js: $NODE_VERSION"
+          
+          # Check Yarn version
+          echo "Checking Yarn version..."
+          YARN_VERSION=$(yarn --version)
+          echo "✓ Yarn: $YARN_VERSION"
+          
+          # Check if Hardhat is available (via npx)
+          echo "Checking Hardhat availability..."
+          if npx hardhat --version > /dev/null 2>&1; then
+            HARDHAT_VERSION=$(npx hardhat --version)
+            echo "✓ Hardhat: $HARDHAT_VERSION"
+          else
+            echo "⚠ Hardhat not installed globally (will be available after yarn install)"
+          fi
+          
+          # Check Forge (Foundry)
+          echo "Checking Forge (Foundry)..."
+          FORGE_VERSION=$(forge --version | head -n1)
+          echo "✓ Forge: $FORGE_VERSION"
+          
+          # Check Solc
+          echo "Checking Solc..."
+          if command -v solc > /dev/null 2>&1; then
+            SOLC_VERSION=$(solc --version | grep Version)
+            echo "✓ Solc: $SOLC_VERSION"
+          else
+            echo "⚠ Solc not found (will be installed by Foundry/Hardhat as needed)"
+          fi
+          
+          # Check Git
+          echo "Checking Git..."
+          GIT_VERSION=$(git --version)
+          echo "✓ Git: $GIT_VERSION"
+          
+          # Check environment variables (optional)
+          echo ""
+          echo "=== Environment Variables ==="
+          if [ -n "$SNYK_TOKEN" ]; then
+            echo "✓ SNYK_TOKEN is set"
+          else
+            echo "⚠ SNYK_TOKEN not set (required for security scanning)"
+          fi
+          
+          if [ -n "$ETHERSCAN_API_KEY" ]; then
+            echo "✓ ETHERSCAN_API_KEY is set"
+          else
+            echo "⚠ ETHERSCAN_API_KEY not set (optional for contract verification)"
+          fi
+          
+          # Test dependency installation
+          echo ""
+          echo "=== Testing Dependency Installation ==="
+          START_TIME=$(date +%s)
+          yarn install
+          END_TIME=$(date +%s)
+          DURATION=$((END_TIME - START_TIME))
+          echo "✓ Dependencies installed in ${DURATION} seconds"
+          
+          if [ $DURATION -gt 300 ]; then
+            echo "⚠ WARNING: Installation took more than 5 minutes ($DURATION seconds)"
+          else
+            echo "✓ Installation completed within 5 minutes"
+          fi
+          
+          # Test basic compilation
+          echo ""
+          echo "=== Testing Basic Build ==="
+          yarn build
+          echo "✓ Build successful"
+          
+          echo ""
+          echo "=== Container Validation Complete ==="
+          EOF
+          
+          chmod +x scripts/test-container-setup.sh
+          bash scripts/test-container-setup.sh
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+          ETHERSCAN_API_KEY: ${{ secrets.ETHERSCAN_API_KEY }}
+
+  compile:
+    name: Compile
+    runs-on: ubuntu-latest
+    needs: validate-container
+    container:
+      image: ghcr.io/${{ github.repository }}-devcontainer:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      volumes:
+        - /home/runner/.cache/yarn:/home/vscode/.cache/yarn
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Compile TypeScript
+        run: yarn build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: compile
+    container:
+      image: ghcr.io/${{ github.repository }}-devcontainer:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      volumes:
+        - /home/runner/.cache/yarn:/home/vscode/.cache/yarn
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+
+      - name: Run tests
+        run: yarn test
+        env:
+          NODE_ENV: test
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: validate-container
+    container:
+      image: ghcr.io/${{ github.repository }}-devcontainer:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      volumes:
+        - /home/runner/.cache/yarn:/home/vscode/.cache/yarn
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run Prettier
+        run: yarn prettier --check
+
+      - name: Run ESLint
+        run: yarn eslint
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: validate-container
+    container:
+      image: ghcr.io/${{ github.repository }}-devcontainer:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      volumes:
+        - /home/runner/.cache/yarn:/home/vscode/.cache/yarn
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run Snyk Security Scan
+        run: |
+          if [ -n "$SNYK_TOKEN" ]; then
+            echo "SNYK_TOKEN is set, running Snyk scan..."
+            npx snyk test --all-projects || echo "Snyk scan completed with findings"
+          else
+            echo "⚠ SNYK_TOKEN not set, skipping Snyk scan"
+            echo "To enable security scanning, set the SNYK_TOKEN secret in your repository settings"
+          fi
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
