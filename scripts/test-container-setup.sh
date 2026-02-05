@@ -104,9 +104,9 @@ if [ "$SKIP_INSTALL" != "true" ]; then
   echo "✓ Dependencies installed in ${DURATION} seconds"
   
   if [ $DURATION -gt $MAX_INSTALL_TIME_SECONDS ]; then
-    echo "⚠ WARNING: Installation took more than 5 minutes ($DURATION seconds)"
+    echo "⚠ WARNING: Installation took more than $MAX_INSTALL_TIME_SECONDS seconds ($DURATION seconds)"
   else
-    echo "✓ Installation completed within 5 minutes"
+    echo "✓ Installation completed within $MAX_INSTALL_TIME_SECONDS seconds"
   fi
   
   # Test basic compilation

@@ -12,18 +12,36 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     build-essential \
     python3 \
     python3-pip \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Foundry (Forge, Cast, Anvil, Chisel)
+# Create vscode user and add to sudoers
+RUN useradd -m -s /bin/bash -u 1000 vscode \
+    && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/vscode \
+    && chmod 0440 /etc/sudoers.d/vscode
+
+# Switch to vscode user for Foundry installation
+USER vscode
+
+# Install Foundry (Forge, Cast, Anvil, Chisel) for vscode user
 RUN curl -L https://foundry.paradigm.xyz | bash
-ENV PATH="/root/.foundry/bin:${PATH}"
-RUN foundryup
+ENV PATH="/home/vscode/.foundry/bin:${PATH}"
+RUN /home/vscode/.foundry/bin/foundryup
+
+# Switch back to root for remaining setup
+USER root
 
 # Install Yarn 4.x globally using Corepack
 RUN corepack enable && corepack prepare yarn@4.10.3 --activate
 
 # Set working directory
 WORKDIR /workspace
+
+# Change ownership to vscode user
+RUN chown -R vscode:vscode /workspace
+
+# Switch to vscode user as default
+USER vscode
 
 # Expose common ports for development
 EXPOSE 8545 8546
