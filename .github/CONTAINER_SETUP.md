@@ -36,13 +36,13 @@ Automatically builds and publishes the DevContainer image to GitHub Container Re
 
 **Features:**
 - Docker layer caching for faster builds
-- Multi-tag strategy (branch, SHA, latest)
+- Multi-tag strategy (branch, SHA, latest) for flexible image references
 - Automatic GHCR authentication using `GITHUB_TOKEN`
 
 **Published Images:**
-- `ghcr.io/diamondslab/diamonds-hardhat-foundry-devcontainer:latest`
-- `ghcr.io/diamondslab/diamonds-hardhat-foundry-devcontainer:main`
-- `ghcr.io/diamondslab/diamonds-hardhat-foundry-devcontainer:main-<sha>`
+- `ghcr.io/diamondslab/diamonds-hardhat-foundry-devcontainer:latest` - Always points to the latest main branch build
+- `ghcr.io/diamondslab/diamonds-hardhat-foundry-devcontainer:main` - Human-readable branch tag
+- `ghcr.io/diamondslab/diamonds-hardhat-foundry-devcontainer:main-<sha>` - Immutable SHA-based tag for reproducible builds
 
 ### 3. CI Workflow (`.github/workflows/ci.yml`)
 

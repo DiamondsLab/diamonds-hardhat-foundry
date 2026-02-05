@@ -103,6 +103,7 @@ if [ "$SKIP_INSTALL" != "true" ]; then
   DURATION=$((END_TIME - START_TIME))
   echo "✓ Dependencies installed in ${DURATION} seconds"
   
+  # Note: This is a warning, not a failure - slow installs may be due to network conditions
   if [ $DURATION -gt $MAX_INSTALL_TIME_SECONDS ]; then
     echo "⚠ WARNING: Installation took more than $MAX_INSTALL_TIME_SECONDS seconds ($DURATION seconds)"
   else
