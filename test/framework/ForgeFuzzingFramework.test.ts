@@ -138,7 +138,7 @@ describe("ForgeFuzzingFramework", () => {
         await framework.deployOnly("ExampleDiamond", "hardhat", false);
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
 
@@ -147,7 +147,7 @@ describe("ForgeFuzzingFramework", () => {
         await framework.deployOnly("CustomDiamond", "hardhat", false);
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
 
@@ -156,7 +156,7 @@ describe("ForgeFuzzingFramework", () => {
         await framework.deployOnly("TestDiamond", "localhost", false);
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
 
@@ -165,7 +165,7 @@ describe("ForgeFuzzingFramework", () => {
         await framework.deployOnly("TestDiamond", "hardhat", true);
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
   });
@@ -244,7 +244,7 @@ describe("ForgeFuzzingFramework", () => {
         await framework.deployOnly();
         expect.fail("Should have thrown");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
   });

@@ -155,7 +155,7 @@ describe("DeploymentManager", () => {
         await deploymentManager.deploy("ExampleDiamond", "hardhat", false);
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer not found");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
   });
@@ -172,7 +172,7 @@ describe("DeploymentManager", () => {
         );
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer not found");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
   });
@@ -183,7 +183,7 @@ describe("DeploymentManager", () => {
         await deploymentManager.deploy("ExampleDiamond", "hardhat", false);
         expect.fail("Should have thrown error");
       } catch (error: any) {
-        expect(error.message).to.include("LocalDiamondDeployer not found");
+        expect(error.message).to.include("@diamondslab/hardhat-diamonds");
       }
     });
 
