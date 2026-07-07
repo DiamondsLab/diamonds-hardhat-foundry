@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-07-07
+
+Packaging and repository-hygiene release. No runtime/API changes — the npm tarball
+still ships the compiled `dist/` and the Solidity helpers under `contracts/`.
+
+### Added
+
+- `engines` field: Node.js `>=18.0.0`, Yarn `>=4.0.0`.
+- `publishConfig` (`access: public`) for the scoped package.
+- `exports` map declaring the public entry points:
+  - `.` — the Hardhat plugin (`dist/index.js` / `dist/index.d.ts`).
+  - `./contracts/*` — the Foundry Solidity helpers (`DiamondForgeHelpers.sol`,
+    `DiamondFuzzBase.sol`, `DiamondABILoader.sol`).
+  - `./dist/*` — compiled JS/type entry points.
+  - `./package.json`.
+
+### Changed
+
+- Corrected `repository` / bugs / homepage URL casing to `DiamondsLab`.
+- `files` whitelist is now `dist/` + `contracts/` only — the TypeScript **`src/` is no
+  longer included in the tarball**. Installs from a git URL must build (`prepare`/`build`);
+  the published npm tarball is unaffected, and the `contracts/*.sol` helpers are still
+  shipped and importable.
+- Source maps and declaration maps are no longer emitted.
+- Consolidated the top-level `DESIGN.md`, `MIGRATION.md`, `RELEASE_SUMMARY.md`,
+  `TESTING.md`, and `TROUBLESHOOTING.md` into `docs/` (dev docs — not in `files`, so the
+  tarball is unaffected).
+
+### Fixed
+
+- `clean` now removes `tsconfig.tsbuildinfo`, so a clean build always re-emits `dist/`
+  (previously a stale build-info file could yield a `dist`-less publish).
+- `tsconfig.tsbuildinfo` is no longer tracked in git.
+
+## [2.4.0] - 2025-12-31
+
+### Changed
+
+- Bumped `hardhat` peer/dev dependency to `^2.28.0` and refreshed peer-dependency versions.
+
+### Fixed
+
+- Standalone install / build / test wiring so the package builds and tests outside the
+  workspace.
+- Updated stale deploy-error assertions in the Foundry test suite.
+
 ## [2.3.0] - 2025-12-30
 
 ### Summary
@@ -39,7 +85,7 @@ This release adds comprehensive **forge coverage** integration for Diamond contr
   - Complete coverage guide ([FOUNDRY_FORGE_DIAMONDS_COVERAGE.md](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md))
   - CI/CD integration examples for GitHub Actions and GitLab CI
   - Common use cases and best practices
-  - Troubleshooting section in main TROUBLESHOOTING.md
+  - Troubleshooting section in main docs/TROUBLESHOOTING.md
   - README.md coverage section with quick start examples
 
 ### Changed
@@ -47,7 +93,100 @@ This release adds comprehensive **forge coverage** integration for Diamond contr
 - README.md: Added coverage feature to features list and command documentation
 - TROUBLESHOOTING.md: Added "Coverage Task Issues" section with 8 common problems and solutions
 
-## [2.1.0] - 2024-12-19
+## [2.2.3] - 2025-12-28
+
+### Fixed
+
+- Corrected the Diamond ABI fallback path resolution in `HelperGenerator`.
+
+## [2.2.2] - 2025-12-19
+
+### Added
+
+- Dynamic Diamond ABI path support for multi-project usage.
+- `DIAMOND_ADDRESS` and `DIAMOND_ABI_PATH` environment variables set during helper generation.
+
+### Fixed
+
+- Improved `_getDiamondABIPath` with try/catch and a clear error message.
+
+## [2.2.0] - 2025-12-19
+
+### Added
+
+- **Dynamic Helper Generation**: DiamondDeployment.sol now generated dynamically from deployment records
+  - No more hardcoded addresses in test helpers
+  - Automatic regeneration on each deployment
+  - Network-specific helpers for multi-network testing
+  - Helper library pattern for clean imports
+- **Deployment Management Improvements**:
+  - Ephemeral deployment mode (default) - deploy in-memory without persisting records
+  - Persistent deployment mode - save deployment records for reuse
+  - `--save-deployment` flag to persist deployment records
+  - `--use-deployment` flag to load existing deployments
+  - `--force-deploy` flag to force redeployment
+  - Smart deployment detection and reuse
+- **Enhanced Test Task Flags**:
+  - `--match-test <pattern>` - Filter tests by name pattern
+  - `--match-contract <contract>` - Filter tests by contract name
+  - `--match-path <path>` - Filter tests by file path
+  - `--verbosity <1-5>` - Control Forge output verbosity
+  - `--gas-report` - Display gas usage reports
+  - `--coverage` - Generate coverage reports
+  - `--skip-helpers` - Skip helper generation step
+  - `--helpers-dir <path>` - Custom helpers output directory
+- **Snapshot/Restore Support**:
+  - `DiamondForgeHelpers.snapshotState()` - Take blockchain state snapshot
+  - `DiamondForgeHelpers.revertToSnapshot()` - Restore to saved snapshot
+  - Uses Foundry's `vm.snapshotState()` and `vm.revertToState()` (no deprecation warnings)
+  - Comprehensive snapshot examples in `SnapshotExample.t.sol`
+  - Full documentation in docs/TESTING.md
+- **Integration Tests**:
+  - 40+ integration tests covering all framework functionality
+  - DeploymentIntegrationTest - validates deployment management
+  - HelperGenerationTest - validates dynamic helper generation
+  - EndToEndTest - validates complete workflows
+  - DiamondABILoaderTest - validates ABI parsing
+  - ExampleIntegrationTest - demonstrates multi-facet interactions
+  - BasicDiamondIntegration - self-deploying test pattern
+  - BasicDiamondIntegrationDeployed - deployed Diamond pattern with fork-awareness
+  - SnapshotExample - snapshot/restore examples
+  - All tests pass with proper fork-awareness and graceful skipping
+
+### Changed
+
+- Helper generation now creates library-based helpers instead of standalone contracts
+- Test workflows now support both ephemeral and persistent deployment modes
+- `diamonds-forge:test` task now supports comprehensive filtering and control
+- Fork-aware test pattern established for deployed Diamond tests
+- Enhanced error messages with actionable troubleshooting steps
+- Improved CI/CD compatibility with ephemeral deployments
+
+### Documentation
+
+- **README.md**:
+  - Added "Dynamic Helper Generation" section with examples
+  - Added "Deployment Management" section covering ephemeral vs persistent modes
+  - Added "Task Flags Reference" with all available options
+  - Added "Snapshot and Restore" section with usage examples
+  - Expanded "Troubleshooting" section with 10+ common issues and solutions
+  - Added fork-awareness patterns and best practices
+- **TESTING.md**:
+  - Added comprehensive "Snapshot and Restore" section
+  - Added snapshot API reference
+  - Added snapshot use cases and examples
+  - Added snapshot limitations and best practices
+  - Enhanced fork-aware testing documentation
+- All documentation updated with working examples from integration tests
+
+### Fixed
+
+- Helper generation now works reliably with ephemeral deployments
+- Tests properly skip when Diamond not deployed (fork-awareness)
+- Snapshot functions use non-deprecated Foundry APIs
+- All integration tests pass with proper isolation
+
+## [2.1.0] - 2025-12-18
 
 ### Summary
 
@@ -140,83 +279,7 @@ This release achieves **100% test pass rate** (141/141 tests passing) with compr
 - **Execution Time**: 8-9 seconds
 - **Success Rate**: 100% (141/141)
 
-## [Unreleased] (Previous Features)
-
-### Added
-
-- **Dynamic Helper Generation**: DiamondDeployment.sol now generated dynamically from deployment records
-  - No more hardcoded addresses in test helpers
-  - Automatic regeneration on each deployment
-  - Network-specific helpers for multi-network testing
-  - Helper library pattern for clean imports
-- **Deployment Management Improvements**:
-  - Ephemeral deployment mode (default) - deploy in-memory without persisting records
-  - Persistent deployment mode - save deployment records for reuse
-  - `--save-deployment` flag to persist deployment records
-  - `--use-deployment` flag to load existing deployments
-  - `--force-deploy` flag to force redeployment
-  - Smart deployment detection and reuse
-- **Enhanced Test Task Flags**:
-  - `--match-test <pattern>` - Filter tests by name pattern
-  - `--match-contract <contract>` - Filter tests by contract name
-  - `--match-path <path>` - Filter tests by file path
-  - `--verbosity <1-5>` - Control Forge output verbosity
-  - `--gas-report` - Display gas usage reports
-  - `--coverage` - Generate coverage reports
-  - `--skip-helpers` - Skip helper generation step
-  - `--helpers-dir <path>` - Custom helpers output directory
-- **Snapshot/Restore Support**:
-  - `DiamondForgeHelpers.snapshotState()` - Take blockchain state snapshot
-  - `DiamondForgeHelpers.revertToSnapshot()` - Restore to saved snapshot
-  - Uses Foundry's `vm.snapshotState()` and `vm.revertToState()` (no deprecation warnings)
-  - Comprehensive snapshot examples in `SnapshotExample.t.sol`
-  - Full documentation in TESTING.md
-- **Integration Tests**:
-  - 40+ integration tests covering all framework functionality
-  - DeploymentIntegrationTest - validates deployment management
-  - HelperGenerationTest - validates dynamic helper generation
-  - EndToEndTest - validates complete workflows
-  - DiamondABILoaderTest - validates ABI parsing
-  - ExampleIntegrationTest - demonstrates multi-facet interactions
-  - BasicDiamondIntegration - self-deploying test pattern
-  - BasicDiamondIntegrationDeployed - deployed Diamond pattern with fork-awareness
-  - SnapshotExample - snapshot/restore examples
-  - All tests pass with proper fork-awareness and graceful skipping
-
-### Changed
-
-- Helper generation now creates library-based helpers instead of standalone contracts
-- Test workflows now support both ephemeral and persistent deployment modes
-- `diamonds-forge:test` task now supports comprehensive filtering and control
-- Fork-aware test pattern established for deployed Diamond tests
-- Enhanced error messages with actionable troubleshooting steps
-- Improved CI/CD compatibility with ephemeral deployments
-
-### Documentation
-
-- **README.md**:
-  - Added "Dynamic Helper Generation" section with examples
-  - Added "Deployment Management" section covering ephemeral vs persistent modes
-  - Added "Task Flags Reference" with all available options
-  - Added "Snapshot and Restore" section with usage examples
-  - Expanded "Troubleshooting" section with 10+ common issues and solutions
-  - Added fork-awareness patterns and best practices
-- **TESTING.md**:
-  - Added comprehensive "Snapshot and Restore" section
-  - Added snapshot API reference
-  - Added snapshot use cases and examples
-  - Added snapshot limitations and best practices
-  - Enhanced fork-aware testing documentation
-- All documentation updated with working examples from integration tests
-
-### Fixed
-
-- Helper generation now works reliably with ephemeral deployments
-- Tests properly skip when Diamond not deployed (fork-awareness)
-- Snapshot functions use non-deprecated Foundry APIs
-- All integration tests pass with proper isolation
-
-## [2.0.0] - 2024-12-16
+## [2.0.0] - 2025-12-16
 
 ### Breaking Changes
 
@@ -225,7 +288,7 @@ This release achieves **100% test pass rate** (141/141 tests passing) with compr
   - Eliminates code duplication and ensures single source of truth
   - No API changes for users of Hardhat tasks (CLI workflow)
   - Minimal impact on programmatic API users (just ensure peer dependency is installed)
-  - See [MIGRATION.md](./MIGRATION.md) for detailed upgrade instructions
+  - See [MIGRATION.md](./docs/MIGRATION.md) for detailed upgrade instructions
 
 ### Added
 
@@ -267,7 +330,7 @@ This release achieves **100% test pass rate** (141/141 tests passing) with compr
 ### Documentation
 
 - Added comprehensive "Importing Helper Contracts" section to README with code examples
-- Created [MIGRATION.md](./MIGRATION.md) with detailed v1.x to v2.0.0 upgrade guide
+- Created [MIGRATION.md](./docs/MIGRATION.md) with detailed v1.x to v2.0.0 upgrade guide
 - Updated installation instructions to highlight required peer dependencies
 - Added examples for all three helper contracts with real-world usage patterns
 - Documented all helper contract functions with parameter descriptions
@@ -280,7 +343,7 @@ This release achieves **100% test pass rate** (141/141 tests passing) with compr
 
 ### Migration Guide
 
-See [MIGRATION.md](./MIGRATION.md) for complete upgrade instructions, including:
+See [MIGRATION.md](./docs/MIGRATION.md) for complete upgrade instructions, including:
 - Breaking changes explanation
 - Step-by-step migration guide
 - Common scenarios and code examples
@@ -358,4 +421,8 @@ Initial public release of `@diamondslab/diamonds-hardhat-foundry`.
   - Solidity integration tests for workflow verification
   - TypeScript integration tests for API validation
 
-[1.0.0]: https://github.com/diamondslab/diamonds-hardhat-foundry/releases/tag/v1.0.0
+<!-- Only v1.0.0 and v2.4.0 exist on the origin remote (git ls-remote --tags); all other
+     version headings are intentionally left unlinked to avoid dead release links. -->
+
+[2.4.0]: https://github.com/DiamondsLab/diamonds-hardhat-foundry/releases/tag/v2.4.0
+[1.0.0]: https://github.com/DiamondsLab/diamonds-hardhat-foundry/releases/tag/v1.0.0

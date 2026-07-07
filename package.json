@@ -1,13 +1,12 @@
 {
   "name": "@diamondslab/diamonds-hardhat-foundry",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Hardhat plugin that integrates Foundry testing with Diamond proxy contracts, providing deployment helpers and fuzzing support",
   "repository": {
     "type": "git",
-    "url": "https://github.com/diamondslab/diamonds-hardhat-foundry",
-    "directory": "packages/diamonds-hardhat-foundry"
+    "url": "git+https://github.com/DiamondsLab/diamonds-hardhat-foundry.git"
   },
-  "homepage": "https://github.com/diamondslab/diamonds-hardhat-foundry",
+  "homepage": "https://github.com/DiamondsLab/diamonds-hardhat-foundry",
   "author": "Am0rfu5",
   "license": "MIT",
   "main": "dist/index.js",
@@ -38,14 +37,14 @@
     "build": "tsc --build . && mkdir -p dist/templates && cp src/templates/*.template dist/templates/",
     "copy-templates": "mkdir -p dist/templates && cp src/templates/*.template dist/templates/",
     "prepublishOnly": "yarn build",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "files": [
     "dist/",
-    "src/",
     "contracts/",
-    "LICENSE",
-    "README.md"
+    "/LICENSE",
+    "/README.md",
+    "/CHANGELOG.md"
   ],
   "devDependencies": {
     "@diamondslab/diamonds": "^1.4.0",
@@ -81,5 +80,24 @@
   "dependencies": {
     "picocolors": "^1.1.0"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.10.3",
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": ">=4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./contracts/*": "./contracts/*",
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    },
+    "./package.json": "./package.json"
+  }
 }
