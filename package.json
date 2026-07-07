@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/DiamondsLab/diamonds-hardhat-foundry.git"
   },
-  "homepage": "https://github.com/diamondslab/diamonds-hardhat-foundry",
+  "homepage": "https://github.com/DiamondsLab/diamonds-hardhat-foundry",
   "author": "Am0rfu5",
   "license": "MIT",
   "main": "dist/index.js",
