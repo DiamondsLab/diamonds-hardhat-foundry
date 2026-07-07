@@ -33,8 +33,10 @@ pnpm add -D @diamondslab/diamonds-hardhat-foundry
 
 ### Prerequisites
 
+- **Node.js**: `>=18`
+- **Yarn**: `>=4` (this package is developed with `yarn@4.10.3`)
 - **Foundry**: Install from [getfoundry.sh](https://getfoundry.sh/)
-- **Hardhat**: `^2.26.0` or later
+- **Hardhat**: `^2.28.0` or later
 - **Required Peer Dependencies**:
   - `@diamondslab/diamonds` - Core Diamond deployment library
   - `@diamondslab/hardhat-diamonds` - Hardhat Diamond configuration and LocalDiamondDeployer
@@ -46,6 +48,35 @@ npm install --save-dev @diamondslab/diamonds @diamondslab/hardhat-diamonds @nomi
 ```
 
 > **Note**: Version 2.0.0+ requires `@diamondslab/hardhat-diamonds` as a peer dependency for LocalDiamondDeployer. See [MIGRATION.md](./docs/MIGRATION.md) for upgrade instructions from v1.x.
+
+## Entry points
+
+This package publishes an `exports` map with the following entry points:
+
+- **`.`** — the Hardhat plugin. Register it in `hardhat.config.ts`:
+
+  ```typescript
+  import "@diamondslab/diamonds-hardhat-foundry";
+  ```
+
+- **`./contracts/*`** — the Solidity helper contracts, imported from Foundry tests:
+
+  ```solidity
+  import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondForgeHelpers.sol";
+  import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondFuzzBase.sol";
+  import "@diamondslab/diamonds-hardhat-foundry/contracts/DiamondABILoader.sol";
+  ```
+
+  These resolve via the `@diamondslab/` remapping in `foundry.toml`:
+
+  ```toml
+  remappings = [
+      "@diamondslab/=node_modules/@diamondslab/",
+  ]
+  ```
+
+- **`./dist/*`** — compiled JavaScript / type declarations for programmatic use.
+- **`./package.json`** — for tooling that reads package metadata.
 
 ## Quick Start
 
@@ -1069,7 +1100,7 @@ If you encounter issues not covered here:
 1. Check the [TESTING.md](./docs/TESTING.md) guide for detailed testing workflows
 2. Review [MIGRATION.md](./docs/MIGRATION.md) if upgrading from v1.x
 3. See [DESIGN.md](./docs/DESIGN.md) for architecture details
-4. Open an issue on [GitHub](https://github.com/diamondslab/diamonds-hardhat-foundry/issues)
+4. Open an issue on [GitHub](https://github.com/DiamondsLab/diamonds-hardhat-foundry/issues)
 
 ## Foundry Not Found
 
@@ -1202,13 +1233,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT © [DiamondsLab](https://github.com/diamondslab)
+MIT © [DiamondsLab](https://github.com/DiamondsLab)
 
 ## Links
 
-- [GitHub Repository](https://github.com/diamondslab/diamonds-hardhat-foundry)
+- [GitHub Repository](https://github.com/DiamondsLab/diamonds-hardhat-foundry)
 - [npm Package](https://www.npmjs.com/package/@diamondslab/diamonds-hardhat-foundry)
-- [@diamondslab/diamonds](https://github.com/diamondslab/diamonds)
-- [@diamondslab/hardhat-diamonds](https://github.com/diamondslab/hardhat-diamonds)
+- [@diamondslab/diamonds](https://github.com/DiamondsLab/diamonds)
+- [@diamondslab/hardhat-diamonds](https://github.com/DiamondsLab/hardhat-diamonds)
 - [ERC-2535 Diamond Standard](https://eips.ethereum.org/EIPS/eip-2535)
 - [Foundry Book](https://book.getfoundry.sh/)
