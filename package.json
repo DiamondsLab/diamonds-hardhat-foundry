@@ -41,10 +41,10 @@
   },
   "files": [
     "dist/",
-    "src/",
     "contracts/",
-    "LICENSE",
-    "README.md"
+    "/LICENSE",
+    "/README.md",
+    "/CHANGELOG.md"
   ],
   "devDependencies": {
     "@diamondslab/diamonds": "^1.4.0",
@@ -87,5 +87,17 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./contracts/*": "./contracts/*",
+    "./dist/*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    },
+    "./package.json": "./package.json"
   }
 }

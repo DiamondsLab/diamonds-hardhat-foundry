@@ -12,8 +12,8 @@
       "DOM"
     ],
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
+    "declarationMap": false,
+    "sourceMap": false,
     "inlineSources": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
