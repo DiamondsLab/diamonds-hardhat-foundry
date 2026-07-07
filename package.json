@@ -38,7 +38,7 @@
     "build": "tsc --build . && mkdir -p dist/templates && cp src/templates/*.template dist/templates/",
     "copy-templates": "mkdir -p dist/templates && cp src/templates/*.template dist/templates/",
     "prepublishOnly": "yarn build",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
   },
   "files": [
     "dist/",
