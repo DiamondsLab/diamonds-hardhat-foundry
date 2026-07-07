@@ -4,8 +4,7 @@
   "description": "Hardhat plugin that integrates Foundry testing with Diamond proxy contracts, providing deployment helpers and fuzzing support",
   "repository": {
     "type": "git",
-    "url": "https://github.com/diamondslab/diamonds-hardhat-foundry",
-    "directory": "packages/diamonds-hardhat-foundry"
+    "url": "git+https://github.com/DiamondsLab/diamonds-hardhat-foundry.git"
   },
   "homepage": "https://github.com/diamondslab/diamonds-hardhat-foundry",
   "author": "Am0rfu5",
@@ -81,5 +80,12 @@
   "dependencies": {
     "picocolors": "^1.1.0"
   },
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.10.3",
+  "engines": {
+    "node": ">=18.0.0",
+    "yarn": ">=4.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }
