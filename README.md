@@ -45,7 +45,7 @@ pnpm add -D @diamondslab/diamonds-hardhat-foundry
 npm install --save-dev @diamondslab/diamonds @diamondslab/hardhat-diamonds @nomicfoundation/hardhat-ethers ethers hardhat
 ```
 
-> **Note**: Version 2.0.0+ requires `@diamondslab/hardhat-diamonds` as a peer dependency for LocalDiamondDeployer. See [MIGRATION.md](./MIGRATION.md) for upgrade instructions from v1.x.
+> **Note**: Version 2.0.0+ requires `@diamondslab/hardhat-diamonds` as a peer dependency for LocalDiamondDeployer. See [MIGRATION.md](./docs/MIGRATION.md) for upgrade instructions from v1.x.
 
 ## Quick Start
 
@@ -614,7 +614,7 @@ forge test --match-path "**/SnapshotExample.t.sol" -vv
 - Snapshot with contract state changes  
 - Test isolation patterns
 
-For detailed snapshot documentation, see [TESTING.md](./TESTING.md#snapshot-and-restore).
+For detailed snapshot documentation, see [TESTING.md](./docs/TESTING.md#snapshot-and-restore).
 
 ## Programmatic API
 
@@ -1066,9 +1066,9 @@ Ensure TypeScript compilation targets CommonJS:
 
 If you encounter issues not covered here:
 
-1. Check the [TESTING.md](./TESTING.md) guide for detailed testing workflows
-2. Review [MIGRATION.md](./MIGRATION.md) if upgrading from v1.x
-3. See [DESIGN.md](./DESIGN.md) for architecture details
+1. Check the [TESTING.md](./docs/TESTING.md) guide for detailed testing workflows
+2. Review [MIGRATION.md](./docs/MIGRATION.md) if upgrading from v1.x
+3. See [DESIGN.md](./docs/DESIGN.md) for architecture details
 4. Open an issue on [GitHub](https://github.com/diamondslab/diamonds-hardhat-foundry/issues)
 
 ## Foundry Not Found
@@ -1194,7 +1194,7 @@ All tests follow best practices:
 - **Gas Profiling**: Gas measurements included in relevant tests
 - **Comprehensive Coverage**: Edge cases, error conditions, and happy paths
 
-See [TESTING.md](./TESTING.md) for detailed testing guide and patterns.
+See [TESTING.md](./docs/TESTING.md) for detailed testing guide and patterns.
 
 ## Contributing
 
