@@ -721,7 +721,7 @@ npx hardhat diamonds-forge:coverage \
 
 **For more coverage documentation, see:**
 - [Coverage Guide](../../docs/FOUNDRY_FORGE_DIAMONDS_COVERAGE.md) - Complete usage guide
-- [README.md](./README.md#diamonds-forgecoverage) - Quick reference
+- [README.md](../README.md#diamonds-forgecoverage) - Quick reference
 
 ---
 
@@ -729,7 +729,7 @@ npx hardhat diamonds-forge:coverage \
 
 If these solutions don't work:
 
-1. Check the [README.md](./README.md) for usage examples
+1. Check the [README.md](../README.md) for usage examples
 2. Check [TESTING.md](./TESTING.md) for test patterns
 3. Review [MIGRATION.md](./MIGRATION.md) if upgrading from v1.x
 4. Open an issue on [GitHub](https://github.com/DiamondsLab/diamonds-hardhat-foundry/issues) with:
